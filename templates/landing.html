@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Navi AI — 点亮你的求职地图</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-container": "#fd6c00",
+              "on-error": "#ffffff",
+              "surface-container-highest": "#e0e3e5",
+              "on-tertiary-fixed": "#341100",
+              "secondary-fixed-dim": "#ffb692",
+              "on-primary-fixed-variant": "#004493",
+              "inverse-primary": "#adc7ff",
+              "tertiary-fixed-dim": "#ffb691",
+              "surface": "#f7f9fb",
+              "on-secondary-container": "#562000",
+              "secondary": "#9f4200",
+              "surface-container-low": "#f2f4f6",
+              "on-tertiary": "#ffffff",
+              "error": "#ba1a1a",
+              "on-primary": "#ffffff",
+              "primary-container": "#1a73e8",
+              "outline-variant": "#c1c6d6",
+              "on-secondary-fixed-variant": "#7a3000",
+              "on-secondary-fixed": "#341100",
+              "outline": "#727785",
+              "background": "#f7f9fb",
+              "on-tertiary-fixed-variant": "#783100",
+              "error-container": "#ffdad6",
+              "on-background": "#191c1e",
+              "on-surface-variant": "#414754",
+              "inverse-on-surface": "#eff1f3",
+              "on-primary-fixed": "#001a41",
+              "on-error-container": "#93000a",
+              "primary-fixed": "#d8e2ff",
+              "surface-container": "#eceef0",
+              "tertiary": "#9e4300",
+              "surface-variant": "#e0e3e5",
+              "surface-tint": "#005bc0",
+              "on-tertiary-container": "#0e0200",
+              "tertiary-fixed": "#ffdbcb",
+              "inverse-surface": "#2d3133",
+              "tertiary-container": "#c55500",
+              "surface-container-high": "#e6e8ea",
+              "surface-container-lowest": "#ffffff",
+              "on-secondary": "#ffffff",
+              "on-primary-container": "#ffffff",
+              "surface-bright": "#f7f9fb",
+              "primary": "#005bbf",
+              "on-surface": "#191c1e",
+              "surface-dim": "#d8dadc",
+              "secondary-fixed": "#ffdbcb",
+              "primary-fixed-dim": "#adc7ff"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Gemini 参考：点阵背景 + 平滑滚动 */
+        body.landing-page {
+            background-color: #fafafa;
+            background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+            background-size: 20px 20px;
+            scroll-behavior: smooth;
+        }
+        .grid-bg-fallback {
+            background-image: radial-gradient(circle, #e0e3e5 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+        }
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(241, 245, 249, 0.9);
+        }
+        /* 雷达扩散（参考 Untitled-1） */
+        .radar-ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid rgba(0, 91, 191, 0.12);
+            animation: landing-radar-pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .radar-ring:nth-child(1) { width: 200px; height: 200px; animation-delay: 0s; }
+        .radar-ring:nth-child(2) { width: 400px; height: 400px; animation-delay: 1s; }
+        .radar-ring:nth-child(3) { width: 600px; height: 600px; animation-delay: 2s; }
+        @keyframes landing-radar-pulse {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: scale(1.2); opacity: 0; }
+        }
+        /* 悬浮卡片 */
+        .float-card {
+            animation: landing-float 6s ease-in-out infinite;
+        }
+        .float-card-delayed {
+            animation: landing-float 6s ease-in-out 3s infinite;
+        }
+        @keyframes landing-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .nav-tab {
+            padding-bottom: 2px;
+            border-bottom: 2px solid transparent;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .nav-tab-active {
+            color: #1d4ed8;
+            font-weight: 700;
+            border-bottom-color: #1d4ed8;
+        }
+        .nav-tab-inactive {
+            color: #475569;
+            font-weight: 500;
+        }
+        .nav-tab-inactive:hover {
+            color: #2563eb;
+        }
+        html {
+            scroll-padding-top: 5rem;
+            --landing-nav-h: 5rem;
+        }
+        .hero-first-screen {
+            box-sizing: border-box;
+            min-height: calc(100vh - var(--landing-nav-h));
+            min-height: calc(100svh - var(--landing-nav-h));
+            min-height: calc(100dvh - var(--landing-nav-h));
+        }
+        .features-region {
+            background: linear-gradient(
+                180deg,
+                #ffffff 0%,
+                #fafafa 100%
+            );
+        }
+        .execution-region {
+            background: #fafafa;
+        }
+        /* 比 max-w-7xl (80rem) 更宽，用于深度匹配 / 自动化执行（约 +20%） */
+        .landing-section-inner-wide {
+            max-width: 96rem;
+        }
+        .hero-first-screen::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 0;
+            height: clamp(4rem, 14vh, 10rem);
+            background: linear-gradient(to bottom, transparent, rgba(250, 250, 250, 0.95));
+            pointer-events: none;
+        }
+        .lang-switch-track {
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            width: 5.5rem;
+            height: 2rem;
+            padding: 3px;
+            background: rgba(226, 232, 240, 0.95);
+            border-radius: 9999px;
+            border: 1px solid rgba(193, 198, 214, 0.35);
+            flex-shrink: 0;
+        }
+        .lang-switch-thumb {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: calc(50% - 5px);
+            height: calc(100% - 6px);
+            background: #fff;
+            border-radius: 9999px;
+            box-shadow: 0 1px 4px rgba(25, 28, 30, 0.1);
+            transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .lang-switch-track[data-lang="en"] .lang-switch-thumb {
+            transform: translateX(calc(100% + 4px));
+        }
+        .lang-switch-opt {
+            position: relative;
+            z-index: 1;
+            border: none;
+            background: transparent;
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            cursor: pointer;
+            color: #64748b;
+            border-radius: 9999px;
+            transition: color 0.2s;
+            font-family: ui-sans-serif, 'Inter', 'Noto Sans SC', system-ui, sans-serif;
+        }
+        .lang-switch-track[data-lang="zh"] .lang-switch-opt[data-lang-btn="zh"],
+        .lang-switch-track[data-lang="en"] .lang-switch-opt[data-lang-btn="en"] {
+            color: #005bbf;
+        }
+        .lang-switch-opt:hover {
+            color: #1d4ed8;
+        }
+    </style>
+</head>
+<body class="landing-page font-body text-on-surface antialiased">
+<nav data-landing-nav class="sticky top-0 z-50 glass-nav shadow-sm">
+<!-- 与 Hero 一致：先全宽水平内边距，再 max-w-7xl，避免「顶栏比正文偏右」 -->
+<div class="w-full px-6 md:px-8">
+<div class="max-w-7xl mx-auto flex justify-between items-center py-4">
+<div class="flex items-center gap-8 lg:gap-12 min-w-0">
+<a href="/" class="text-2xl font-black text-blue-700 tracking-tighter font-headline no-underline hover:opacity-90 shrink-0">Navi AI</a>
+<div class="hidden md:flex gap-6 lg:gap-8 items-end font-manrope tracking-tight text-sm">
+<a id="nav-link-home" class="nav-tab nav-tab-active no-underline" href="#home" data-nav="home">宏观洞察</a>
+<a id="nav-link-features" class="nav-tab nav-tab-inactive no-underline" href="#features" data-nav="features">深度匹配</a>
+<a id="nav-link-execution" class="nav-tab nav-tab-inactive no-underline" href="#execution" data-nav="execution">自动化执行</a>
+</div>
+</div>
+<div class="flex flex-row items-center justify-end gap-3 sm:gap-4 shrink-0">
+<div class="lang-switch-track" id="langSwitchTrack" data-lang="zh" role="group" aria-label="语言切换">
+<span class="lang-switch-thumb" aria-hidden="true"></span>
+<button type="button" class="lang-switch-opt" data-lang-btn="zh" aria-pressed="true" title="中文">中文</button>
+<button type="button" class="lang-switch-opt" data-lang-btn="en" aria-pressed="false" title="English">EN</button>
+</div>
+<a id="nav-get-started" href="/workbench" class="inline-flex items-center justify-center bg-primary hover:bg-primary-container text-on-primary px-5 py-2.5 rounded-xl font-semibold text-sm shadow-md shadow-blue-500/15 transition-all duration-150 active:scale-95 no-underline">
+                    进入工作台
+                </a>
+</div>
+</div>
+</div>
+</nav>
+<main>
+<!-- Hero：宏观洞察 -->
+<section id="home" class="hero-first-screen relative flex flex-col justify-center overflow-hidden px-6 md:px-8 py-10 md:py-12">
+<div class="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-10 items-center relative z-[1]">
+<div class="max-w-xl z-10">
+<div class="flex items-center gap-2 mb-6">
+<span class="flex h-5 w-5 rounded-full bg-primary-fixed/40 items-center justify-center">
+<span class="h-2 w-2 rounded-full bg-primary"></span>
+</span>
+<span id="i18n-hero-badge" class="text-xs font-bold tracking-wider uppercase text-primary font-label">Career Intelligence V2.0</span>
+</div>
+<h1 class="font-headline text-5xl md:text-6xl lg:text-7xl font-extrabold text-on-surface leading-[1.15] mb-6 tracking-tight">
+<span id="i18n-hero-h1a" class="text-on-surface">掌握全盘数据，</span><br id="hero-h1-br" />
+<span id="i18n-hero-h1b" class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400">优化求职策略</span>
+</h1>
+<p id="i18n-hero-sub" class="text-lg text-on-surface-variant mb-10 leading-relaxed">
+                        先广后深：按城市、薪资与经验抓取岗位，并打上「大厂」「AI 原生」等赛道标签。你可按偏好锁定目标岗位，再联动简历逐岗深度匹配与差距分析——从扫盘面到精准投递，步步有数。
+                    </p>
+<div class="flex flex-wrap gap-4">
+<a id="i18n-cta-hero" href="/workbench" class="bg-gradient-to-r from-secondary to-secondary-container text-on-primary px-8 py-4 rounded-xl font-bold text-base shadow-lg shadow-orange-500/25 transition-all duration-300 inline-flex items-center justify-center gap-2 group no-underline w-full sm:w-auto">
+                            <span id="i18n-cta-hero-text">Explore Your Job Map</span>
+                            <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+</a>
+</div>
+</div>
+<!-- 右侧：雷达 + 悬浮卡 -->
+<div class="relative hidden lg:flex items-center justify-center min-h-[480px]">
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<div class="radar-ring"></div>
+<div class="radar-ring"></div>
+<div class="radar-ring"></div>
+<div class="w-12 h-12 bg-primary rounded-full shadow-xl shadow-blue-500/35 flex items-center justify-center z-20 relative">
+<span class="material-symbols-outlined text-white text-2xl">visibility</span>
+</div>
+</div>
+<div class="absolute top-[10%] right-[5%] glass-card p-5 rounded-2xl shadow-xl w-64 max-w-[85%] float-card z-30">
+<div class="flex items-center gap-3 mb-3">
+<div class="w-8 h-8 rounded-lg bg-primary-fixed/60 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-lg">search</span>
+</div>
+<div>
+<p id="i18n-radar-live" class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Live Scrape</p>
+<p id="i18n-radar-roles" class="text-sm font-bold text-on-surface">4,209 New Roles</p>
+</div>
+</div>
+<div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden mb-2">
+<div class="h-full bg-primary w-[85%] rounded-full"></div>
+</div>
+<p id="i18n-radar-scan-line" class="text-[10px] text-on-surface-variant italic leading-relaxed">Scanning: 杭州 / 上海 / 北京 / 全国</p>
+</div>
+<div class="absolute bottom-[18%] left-[0%] glass-card p-5 rounded-2xl shadow-xl w-56 max-w-[80%] float-card-delayed z-30">
+<div class="flex items-center gap-2 mb-3">
+<span class="text-orange-400 text-lg leading-none" aria-hidden="true">★</span>
+<span id="i18n-match-title" class="text-[11px] font-bold text-on-surface">最佳匹配</span>
+</div>
+<div class="rounded-xl p-3 border border-orange-100 bg-orange-50/90">
+<p id="i18n-match-role" class="text-xs font-bold text-on-surface mb-1">AI 产品经理</p>
+<p id="i18n-match-pct" class="text-[10px] text-on-surface-variant">匹配度 90+</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Features：深度匹配 -->
+<section id="features" class="features-region py-28 md:py-36 px-6 md:px-8 border-y border-slate-100">
+<div class="landing-section-inner-wide mx-auto w-full px-0">
+<div class="text-center max-w-2xl mx-auto mb-16 md:mb-20">
+<h2 id="i18n-feat-head" class="font-headline text-3xl md:text-4xl font-extrabold text-on-surface mb-4 text-balance">精准解析与三层漏斗匹配</h2>
+<p id="i18n-feat-sub" class="text-on-surface-variant text-base leading-relaxed">放弃仅通过文字长度判断 JD 质量的做法。系统通过多轮智能判定，将你的经验与岗位要求建立起具体的对应关系。</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="p-8 rounded-2xl bg-surface-container-low/80 border border-outline-variant/15 hover:shadow-lg transition-shadow">
+<div class="w-12 h-12 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/20 flex items-center justify-center mb-6 text-primary">
+<span class="material-symbols-outlined text-2xl">sell</span>
+</div>
+<h3 id="i18n-feat1-title" class="text-xl font-bold text-on-surface mb-3">细分赛道自动标注</h3>
+<p id="i18n-feat1-body" class="text-sm text-on-surface-variant leading-relaxed">通过广度分析，将宽泛的岗位切分为子类（例如拆解为原生创业、传统转型等类别），确保深度分析花在目标方向上。</p>
+</div>
+<div class="p-8 rounded-2xl bg-surface-container-low/80 border border-outline-variant/15 hover:shadow-lg transition-shadow">
+<div class="w-12 h-12 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/20 flex items-center justify-center mb-6 text-primary">
+<span class="material-symbols-outlined text-2xl">filter_alt</span>
+</div>
+<h3 id="i18n-feat2-title" class="text-xl font-bold text-on-surface mb-3">三层级漏斗筛选</h3>
+<p id="i18n-feat2-body" class="text-sm text-on-surface-variant leading-relaxed">包含条件硬筛、轻量级粗评，以及针对高分岗位启动的深度 Match Agent。在节省 API Token 开销的同时，不错过任何高价值机会。</p>
+</div>
+<div class="p-8 rounded-2xl bg-surface-container-low/80 border border-outline-variant/15 hover:shadow-lg transition-shadow">
+<div class="w-12 h-12 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/20 flex items-center justify-center mb-6 text-primary">
+<span class="material-symbols-outlined text-2xl">fact_check</span>
+</div>
+<h3 id="i18n-feat3-title" class="text-xl font-bold text-on-surface mb-3">具体差距对照提取</h3>
+<p id="i18n-feat3-body" class="text-sm text-on-surface-variant leading-relaxed">深度分析后不仅输出分数，而是整理出清晰的匹配点与缺失经验，为你后续的面试准备或技能补充提供明确清单。</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Execution：自动化执行 -->
+<!-- 纵向：与「深度匹配」同档上下留白（py），避免滚动时显得偏矮 -->
+<section id="execution" class="execution-region py-28 md:py-36 px-6 md:px-8 relative overflow-hidden">
+<div class="landing-section-inner-wide mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 items-start lg:items-center">
+<div>
+<h2 id="i18n-exec-head" class="font-headline text-3xl md:text-4xl font-extrabold text-on-surface mb-8 md:mb-10 text-balance">沉淀数据，自动化执行</h2>
+<div class="space-y-8">
+<div class="flex gap-4">
+<div class="flex-shrink-0 mt-0.5">
+<div class="w-7 h-7 rounded-full bg-primary-fixed/50 text-primary flex items-center justify-center text-sm font-bold">1</div>
+</div>
+<div>
+<h4 id="i18n-exec1-title" class="text-lg font-bold text-on-surface mb-1">基于共性的主简历改写</h4>
+<p id="i18n-exec1-body" class="text-sm text-on-surface-variant leading-relaxed">提取高分岗位池的共同侧重点，由系统辅助修改主简历。用一份胜率最高的简历覆盖同类岗位，免去繁琐的单独修改环节。</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="flex-shrink-0 mt-0.5">
+<div class="w-7 h-7 rounded-full bg-primary-fixed/50 text-primary flex items-center justify-center text-sm font-bold">2</div>
+</div>
+<div>
+<h4 id="i18n-exec2-title" class="text-lg font-bold text-on-surface mb-1">结构化 SQLite 数据管理</h4>
+<p id="i18n-exec2-body" class="text-sm text-on-surface-variant leading-relaxed">抛弃难以溯源的 Excel 表格。岗位详情、过滤状态、打分结果统一落库，彻底解决重复数据和投递混乱的问题。</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="flex-shrink-0 mt-0.5">
+<div class="w-7 h-7 rounded-full bg-primary-fixed/50 text-primary flex items-center justify-center text-sm font-bold">3</div>
+</div>
+<div>
+<h4 id="i18n-exec3-title" class="text-lg font-bold text-on-surface mb-1">进度监控与记录导出</h4>
+<p id="i18n-exec3-body" class="text-sm text-on-surface-variant leading-relaxed">在控制台中实时查看爬取、匹配等操作日志。支持将最终筛选完成的高质量岗位单列导出，专注核心目标。</p>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl shadow-2xl border border-outline-variant/15 overflow-hidden transform rotate-1 hover:rotate-0 transition-transform duration-500">
+<div class="bg-surface-container-low border-b border-outline-variant/20 px-4 py-3 flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-red-400"></div>
+<div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+<div class="w-3 h-3 rounded-full bg-green-400"></div>
+<span id="i18n-exec-table-title" class="text-xs font-mono text-on-surface-variant ml-2">jobs.db - SQLite Viewer</span>
+</div>
+<div class="p-0 text-xs font-mono overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[320px]">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant border-b border-outline-variant/15">
+<th class="p-3 font-medium" id="i18n-tcol-id">job_id</th>
+<th class="p-3 font-medium" id="i18n-tcol-title">title</th>
+<th class="p-3 font-medium" id="i18n-tcol-track">track</th>
+<th class="p-3 font-medium" id="i18n-tcol-score">match_score</th>
+<th class="p-3 font-medium" id="i18n-tcol-status">status</th>
+</tr>
+</thead>
+<tbody class="text-on-surface-variant">
+<tr class="border-b border-outline-variant/10">
+<td class="p-3">e7f8…</td>
+<td id="i18n-trow1-title" class="p-3 font-semibold text-on-surface">AI Product Manager</td>
+<td class="p-3"><span id="i18n-trow1-track" class="bg-primary-fixed/30 text-primary px-2 py-0.5 rounded text-[11px]">原生创业</span></td>
+<td class="p-3 text-secondary font-bold">95</td>
+<td id="i18n-trow1-st" class="p-3">scored</td>
+</tr>
+<tr class="border-b border-outline-variant/10 bg-surface-container-low/50">
+<td class="p-3">b2a1…</td>
+<td id="i18n-trow2-title" class="p-3 font-semibold text-on-surface">Senior Data Analyst</td>
+<td class="p-3"><span id="i18n-trow2-track" class="bg-surface-container text-on-surface-variant px-2 py-0.5 rounded text-[11px]">传统转型</span></td>
+<td class="p-3">82</td>
+<td id="i18n-trow2-st" class="p-3">scored</td>
+</tr>
+<tr class="border-b border-outline-variant/10">
+<td class="p-3 text-on-surface-variant/50">c9d4…</td>
+<td id="i18n-trow3-title" class="p-3 text-on-surface-variant/60">Project Coordinator</td>
+<td class="p-3">—</td>
+<td class="p-3 text-on-surface-variant/50">—</td>
+<td id="i18n-trow3-st" class="p-3 text-on-surface-variant/50 line-through">filtered</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="bg-surface-container-low p-3 text-[10px] text-on-surface-variant/70 font-mono border-t border-outline-variant/15" id="i18n-exec-sql">
+                    &gt; SELECT * FROM jobs WHERE match_score &gt; 80 ORDER BY match_score DESC;
+                </div>
+</div>
+</div>
+</section>
+<!-- 底部 CTA -->
+<section class="py-16 md:py-20 px-6 md:px-8 bg-white border-t border-slate-100">
+<div class="max-w-3xl mx-auto text-center">
+<h2 id="i18n-cta-title" class="font-headline text-2xl md:text-3xl font-extrabold mb-4 tracking-tight">准备好进入工作台了吗？</h2>
+<p id="i18n-cta-sub" class="text-on-surface-variant mb-8 leading-relaxed">本地运行、数据落库、全流程可追踪——从抓取到匹配与改写，一站完成。</p>
+<a id="i18n-cta-bottom" href="/workbench" class="inline-flex items-center justify-center bg-primary text-on-primary px-10 py-4 rounded-2xl font-bold text-lg shadow-lg transition-transform active:scale-95 hover:opacity-95 no-underline">开始使用</a>
+</div>
+</section>
+</main>
+<footer class="bg-surface-container-lowest border-t border-slate-100">
+<div class="flex flex-col md:flex-row justify-between items-center gap-4 px-6 md:px-8 py-8 max-w-7xl mx-auto">
+<div class="text-sm font-extrabold text-blue-700 tracking-wider font-headline">NAVI AI</div>
+<p id="i18n-footer-line" class="text-xs text-slate-400 text-center md:text-right max-w-md leading-relaxed">Personal Knowledge Management + AI Agent, powered by SQLite.</p>
+</div>
+</footer>
+<script>
+(function () {
+  var LANG_STORAGE_KEY = 'naviLandingLang';
+
+  var LANDING_I18N = {
+    zh: {
+      docTitle: 'Navi AI — 点亮你的求职地图',
+      navMacro: '宏观洞察',
+      navDeep: '深度匹配',
+      navExec: '自动化执行',
+      getStarted: '进入工作台',
+      heroBadge: 'Career Intelligence V2.0',
+      heroH1a: '掌握全盘数据，',
+      heroH1b: '优化求职策略',
+      heroSub: '先广后深：按城市、薪资与经验抓取岗位，并打上「大厂」「AI 原生」等赛道标签。你可按偏好锁定目标岗位，再联动简历逐岗深度匹配与差距分析——从扫盘面到精准投递，步步有数。',
+      ctaHero: '探索你的职位地图',
+      radarLive: '实时抓取',
+      radarRoles: '4,209 个新岗位',
+      radarScanLine: 'Scanning: 杭州 / 上海 / 北京 / 全国',
+      matchTitle: '最佳匹配',
+      matchRole: 'AI 产品经理',
+      matchPct: '匹配度 90+',
+      featHead: '精准解析与三层漏斗匹配',
+      featSub: '放弃仅通过文字长度判断 JD 质量的做法。系统通过多轮智能判定，将你的经验与岗位要求建立起具体的对应关系。',
+      feat1Title: '细分赛道自动标注',
+      feat1Body: '通过广度分析，将宽泛的岗位切分为子类（例如拆解为原生创业、传统转型等类别），确保深度分析花在目标方向上。',
+      feat2Title: '三层级漏斗筛选',
+      feat2Body: '包含条件硬筛、轻量级粗评，以及针对高分岗位启动的深度 Match Agent。在节省 API Token 开销的同时，不错过任何高价值机会。',
+      feat3Title: '具体差距对照提取',
+      feat3Body: '深度分析后不仅输出分数，而是整理出清晰的匹配点与缺失经验，为你后续的面试准备或技能补充提供明确清单。',
+      execHead: '沉淀数据，自动化执行',
+      exec1Title: '基于共性的主简历改写',
+      exec1Body: '提取高分岗位池的共同侧重点，由系统辅助修改主简历。用一份胜率最高的简历覆盖同类岗位，免去繁琐的单独修改环节。',
+      exec2Title: '结构化 SQLite 数据管理',
+      exec2Body: '抛弃难以溯源的 Excel 表格。岗位详情、过滤状态、打分结果统一落库，彻底解决重复数据和投递混乱的问题。',
+      exec3Title: '进度监控与记录导出',
+      exec3Body: '在控制台中实时查看爬取、匹配等操作日志。支持将最终筛选完成的高质量岗位单列导出，专注核心目标。',
+      execTableTitle: 'jobs.db - SQLite 查看器',
+      tcolId: 'job_id',
+      tcolTitle: 'title',
+      tcolTrack: 'track',
+      tcolScore: 'match_score',
+      tcolStatus: 'status',
+      trow1Title: 'AI 产品经理',
+      trow1Track: '原生创业',
+      trow2Title: '高级数据分析师',
+      trow2Track: '传统转型',
+      trow3Title: '项目协调',
+      trow1St: '已打分',
+      trow2St: '已打分',
+      trow3St: '已过滤',
+      execSql: '> SELECT * FROM jobs WHERE match_score > 80 ORDER BY match_score DESC;',
+      ctaTitle: '准备好进入工作台了吗？',
+      ctaSub: '本地运行、数据落库、全流程可追踪——从抓取到匹配与改写，一站完成。',
+      ctaBottom: '开始使用',
+      footerLine: '个人知识管理 + AI Agent，由 SQLite 驱动。'
+    },
+    en: {
+      docTitle: 'Navi AI — Light Up Your Job Map',
+      navMacro: 'Macro Insight',
+      navDeep: 'Deep Match',
+      navExec: 'Automation',
+      getStarted: 'Open Workbench',
+      heroBadge: 'Career Intelligence V2.0',
+      heroH1a: 'Master Dataset ',
+      heroH1b: 'Refine Strategy',
+      heroSub: 'Breadth first, depth next: crawl by city, salary, and experience, then label tracks like Big Tech or AI-native. Filter to the roles you care about, then deep-match and analyze gaps against your resume—from market map to targeted applications.',
+      ctaHero: 'Explore Your Job Map',
+      radarLive: 'Live Scrape',
+      radarRoles: '4,209 New Roles',
+      radarScanLine: 'Scanning: Hangzhou / Shanghai / Beijing / Nationwide',
+      matchTitle: 'Best Match Found',
+      matchRole: 'AI Product Manager',
+      matchPct: 'Match rating 90+',
+      featHead: 'Deep Match & Funnel',
+      featSub: 'Stop judging JD quality by length alone. Through multiple intelligent passes, the system maps your experience to concrete job requirements.',
+      feat1Title: 'Auto sub-track labeling',
+      feat1Body: 'Through broad analysis, split wide roles into sub-categories (e.g. startup-native, legacy transition), so deep analysis spends effort on your target directions.',
+      feat2Title: 'Three-tier funnel',
+      feat2Body: 'Hard filters, lightweight coarse scoring, and a deep Match Agent for high scores—saving API tokens without missing high-value leads.',
+      feat3Title: 'Concrete gap extraction',
+      feat3Body: 'Beyond scores, get clear matches and gaps for interview prep and upskilling—not just a number.',
+      execHead: 'Persist & Automate',
+      exec1Title: 'Master resume from commonality',
+      exec1Body: 'Extract shared themes from your top-scoring pool and refine one master resume that covers similar roles—no per-job rewrites.',
+      exec2Title: 'Structured SQLite storage',
+      exec2Body: 'Leave fragile spreadsheets behind. Listings, filter state, and scores live in one DB—no duplicate rows or messy tracking.',
+      exec3Title: 'Progress & export',
+      exec3Body: 'Watch crawl and match logs in the console; export filtered high-quality lists when you are ready.',
+      execTableTitle: 'jobs.db — SQLite Viewer',
+      tcolId: 'job_id',
+      tcolTitle: 'title',
+      tcolTrack: 'track',
+      tcolScore: 'match_score',
+      tcolStatus: 'status',
+      trow1Title: 'AI Product Manager',
+      trow1Track: 'Startup-native',
+      trow2Title: 'Senior Data Analyst',
+      trow2Track: 'Legacy shift',
+      trow3Title: 'Project Coordinator',
+      trow1St: 'scored',
+      trow2St: 'scored',
+      trow3St: 'filtered',
+      execSql: '> SELECT * FROM jobs WHERE match_score > 80 ORDER BY match_score DESC;',
+      ctaTitle: 'Ready to open the workbench?',
+      ctaSub: 'Runs locally, data in SQLite, full pipeline traceable—from crawl to match and rewrite.',
+      ctaBottom: 'Get started',
+      footerLine: 'Personal knowledge management + AI agent, powered by SQLite.'
+    }
+  };
+
+  function setText(id, text) {
+    var el = document.getElementById(id);
+    if (el && text != null) el.textContent = text;
+  }
+
+  function applyLandingLang(lang) {
+    if (lang !== 'zh' && lang !== 'en') lang = 'zh';
+    var t = LANDING_I18N[lang];
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+    document.title = t.docTitle;
+    try {
+      localStorage.setItem(LANG_STORAGE_KEY, lang);
+    } catch (e) { /* ignore */ }
+
+    var track = document.getElementById('langSwitchTrack');
+    if (track) track.setAttribute('data-lang', lang);
+
+    document.querySelectorAll('.lang-switch-opt').forEach(function (btn) {
+      var on = btn.getAttribute('data-lang-btn') === lang;
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+
+    setText('nav-link-home', t.navMacro);
+    setText('nav-link-features', t.navDeep);
+    setText('nav-link-execution', t.navExec);
+    setText('nav-get-started', t.getStarted);
+    setText('i18n-hero-badge', t.heroBadge);
+    setText('i18n-hero-h1a', t.heroH1a);
+    setText('i18n-hero-h1b', t.heroH1b);
+    var heroBr = document.getElementById('hero-h1-br');
+    if (heroBr) heroBr.style.display = lang === 'en' ? 'none' : '';
+    setText('i18n-hero-sub', t.heroSub);
+    setText('i18n-cta-hero-text', t.ctaHero);
+    setText('i18n-radar-live', t.radarLive);
+    setText('i18n-radar-roles', t.radarRoles);
+    setText('i18n-radar-scan-line', t.radarScanLine);
+    setText('i18n-match-title', t.matchTitle);
+    setText('i18n-match-role', t.matchRole);
+    setText('i18n-match-pct', t.matchPct);
+    setText('i18n-feat-head', t.featHead);
+    setText('i18n-feat-sub', t.featSub);
+    setText('i18n-feat1-title', t.feat1Title);
+    setText('i18n-feat1-body', t.feat1Body);
+    setText('i18n-feat2-title', t.feat2Title);
+    setText('i18n-feat2-body', t.feat2Body);
+    setText('i18n-feat3-title', t.feat3Title);
+    setText('i18n-feat3-body', t.feat3Body);
+    setText('i18n-exec-head', t.execHead);
+    setText('i18n-exec1-title', t.exec1Title);
+    setText('i18n-exec1-body', t.exec1Body);
+    setText('i18n-exec2-title', t.exec2Title);
+    setText('i18n-exec2-body', t.exec2Body);
+    setText('i18n-exec3-title', t.exec3Title);
+    setText('i18n-exec3-body', t.exec3Body);
+    setText('i18n-exec-table-title', t.execTableTitle);
+    setText('i18n-tcol-id', t.tcolId);
+    setText('i18n-tcol-title', t.tcolTitle);
+    setText('i18n-tcol-track', t.tcolTrack);
+    setText('i18n-tcol-score', t.tcolScore);
+    setText('i18n-tcol-status', t.tcolStatus);
+    setText('i18n-trow1-title', t.trow1Title);
+    setText('i18n-trow1-track', t.trow1Track);
+    setText('i18n-trow2-title', t.trow2Title);
+    setText('i18n-trow2-track', t.trow2Track);
+    setText('i18n-trow3-title', t.trow3Title);
+    setText('i18n-trow1-st', t.trow1St);
+    setText('i18n-trow2-st', t.trow2St);
+    setText('i18n-trow3-st', t.trow3St);
+    setText('i18n-exec-sql', t.execSql);
+    setText('i18n-cta-title', t.ctaTitle);
+    setText('i18n-cta-sub', t.ctaSub);
+    setText('i18n-cta-bottom', t.ctaBottom);
+    setText('i18n-footer-line', t.footerLine);
+  }
+
+  function initLandingLang() {
+    var saved = null;
+    try {
+      saved = localStorage.getItem(LANG_STORAGE_KEY);
+    } catch (e) { /* ignore */ }
+    applyLandingLang(saved === 'en' ? 'en' : 'zh');
+
+    document.querySelectorAll('.lang-switch-opt').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var next = btn.getAttribute('data-lang-btn');
+        if (next === 'zh' || next === 'en') applyLandingLang(next);
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLandingLang);
+  } else {
+    initLandingLang();
+  }
+
+  var landingNav = document.querySelector('[data-landing-nav]');
+  var navHome = document.getElementById('nav-link-home');
+  var navFeatures = document.getElementById('nav-link-features');
+  var navExecution = document.getElementById('nav-link-execution');
+  var sectionHome = document.getElementById('home');
+  var sectionFeatures = document.getElementById('features');
+  var sectionExecution = document.getElementById('execution');
+
+  function syncLandingNavHeight() {
+    if (!landingNav) return;
+    var h = Math.ceil(landingNav.getBoundingClientRect().height);
+    document.documentElement.style.setProperty('--landing-nav-h', h + 'px');
+  }
+
+  function bindNavHeight() {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', syncLandingNavHeight);
+    } else {
+      syncLandingNavHeight();
+    }
+    window.addEventListener('load', syncLandingNavHeight);
+    window.addEventListener('resize', function () {
+      window.requestAnimationFrame(syncLandingNavHeight);
+    });
+    if (landingNav && typeof ResizeObserver !== 'undefined') {
+      new ResizeObserver(function () {
+        window.requestAnimationFrame(syncLandingNavHeight);
+      }).observe(landingNav);
+    }
+  }
+  bindNavHeight();
+
+  function setNavActive(which) {
+    var tabs = [
+      { id: 'home', el: navHome },
+      { id: 'features', el: navFeatures },
+      { id: 'execution', el: navExecution }
+    ];
+    tabs.forEach(function (item) {
+      if (!item.el) return;
+      if (item.id === which) {
+        item.el.classList.add('nav-tab-active');
+        item.el.classList.remove('nav-tab-inactive');
+      } else {
+        item.el.classList.remove('nav-tab-active');
+        item.el.classList.add('nav-tab-inactive');
+      }
+    });
+  }
+
+  function syncFromScroll() {
+    if (!sectionHome || !sectionFeatures || !sectionExecution) return;
+    var off = 120;
+    var y = window.scrollY || window.pageYOffset;
+    var exTop = sectionExecution.offsetTop;
+    var feTop = sectionFeatures.offsetTop;
+    if (y + off >= exTop) {
+      setNavActive('execution');
+    } else if (y + off >= feTop) {
+      setNavActive('features');
+    } else {
+      setNavActive('home');
+    }
+  }
+
+  if (navHome && sectionHome) {
+    navHome.addEventListener('click', function (e) {
+      var path = window.location.pathname || '';
+      if (path === '/' || path === '') {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, '', '/');
+        }
+        setNavActive('home');
+      }
+    });
+  }
+
+  [navFeatures, navExecution].forEach(function (link) {
+    if (!link) return;
+    link.addEventListener('click', function () {
+      var target = link.getAttribute('data-nav');
+      window.requestAnimationFrame(function () {
+        setTimeout(function () {
+          if (target) setNavActive(target);
+        }, 80);
+      });
+    });
+  });
+
+  window.addEventListener('scroll', function () {
+    window.requestAnimationFrame(syncFromScroll);
+  }, { passive: true });
+
+  window.addEventListener('resize', function () {
+    window.requestAnimationFrame(syncFromScroll);
+  });
+
+  window.addEventListener('hashchange', function () {
+    var h = window.location.hash;
+    if (h === '#features') setNavActive('features');
+    else if (h === '#execution') setNavActive('execution');
+    else if (h === '#home' || h === '') syncFromScroll();
+  });
+
+  window.addEventListener('load', function () {
+    var h = window.location.hash;
+    if (h === '#features') setNavActive('features');
+    else if (h === '#execution') setNavActive('execution');
+    else syncFromScroll();
+  });
+  syncFromScroll();
+})();
+</script>
+</body>
+</html>

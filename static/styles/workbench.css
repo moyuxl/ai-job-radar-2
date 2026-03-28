@@ -1,0 +1,528 @@
+/* Navi AI 工作台布局（参考设计稿 + 原业务组件） */
+
+body.workbench-body {
+  padding: 0;
+  min-height: 100vh;
+  /* 左侧 Workflow 宽度：与 .workbench-sidebar、.workbench-shell 左边距同步 */
+  --workbench-sidebar-width: 20rem;
+  /* 与下方步骤按钮内图标左缘对齐：nav 水平内边距 + 按钮左内边距 */
+  --workbench-wf-nav-pad-x: 0.65rem;
+  --workbench-wf-item-pad-x: 0.9rem;
+  --workbench-wf-icon-align: calc(var(--workbench-wf-nav-pad-x) + var(--workbench-wf-item-pad-x));
+}
+
+.workbench-body .container {
+  max-width: none;
+  margin: 0;
+  animation: none;
+}
+
+/* —— 顶栏 —— */
+.workbench-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  background: rgba(247, 249, 251, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--ghost-border);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.workbench-topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 1.25rem;
+  max-width: 100%;
+}
+
+.workbench-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+.workbench-logo {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #1d4ed8;
+  text-decoration: none;
+  letter-spacing: -0.03em;
+  flex-shrink: 0;
+}
+
+.workbench-logo:hover {
+  opacity: 0.88;
+}
+
+/* 顶栏内返回：仅箭头，与 Logo、Dashboard 同一行 */
+.workbench-topbar-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-left: 1px solid var(--ghost-border);
+  padding: 0.35rem 0.5rem 0.35rem 0.75rem;
+  margin-left: 0.35rem;
+  border-radius: 0.5rem;
+  transition: color 0.2s, background 0.2s;
+  flex-shrink: 0;
+}
+
+.workbench-topbar-back svg {
+  display: block;
+}
+
+.workbench-topbar-back:hover {
+  color: var(--primary);
+  background: rgba(0, 91, 191, 0.06);
+}
+
+.workbench-topnav {
+  display: none;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .workbench-topnav {
+    display: flex;
+  }
+}
+
+.workbench-topnav-link {
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding-bottom: 0.2rem;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.workbench-topnav-link.is-active {
+  color: #1d4ed8;
+  border-bottom-color: #2563eb;
+}
+
+.workbench-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.workbench-user-chip {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(0, 91, 191, 0.15), rgba(26, 115, 232, 0.12));
+  border: 1px solid rgba(193, 198, 214, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--primary);
+  cursor: default;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+/* —— 左侧 Workflow —— */
+.workbench-sidebar {
+  display: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--workbench-sidebar-width);
+  padding-top: 4.5rem;
+  padding-bottom: 1rem;
+  background: rgba(242, 244, 246, 0.65);
+  border-right: 1px solid var(--ghost-border);
+  flex-direction: column;
+  z-index: 150;
+  overflow-y: auto;
+}
+
+@media (min-width: 1024px) {
+  .workbench-sidebar {
+    display: flex;
+  }
+}
+
+.workbench-sidebar-head {
+  /* 左缘与 .workbench-workflow-icon 左缘对齐（见 --workbench-wf-icon-align） */
+  padding: 0.85rem 1.1rem 1.05rem;
+  padding-left: var(--workbench-wf-icon-align);
+  margin-bottom: 0.25rem;
+}
+
+/* 主标题 1.25rem；副标题「6 步完成闭环」0.75rem、行距收紧 */
+.workbench-sidebar-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: #2563eb;
+  margin: 0 0 0.1rem;
+}
+
+.workbench-sidebar-sub {
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.05em;
+  text-transform: none;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.workbench-workflow-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.3rem var(--workbench-wf-nav-pad-x) 1rem;
+}
+
+.workbench-workflow-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.72rem var(--workbench-wf-item-pad-x);
+  border-radius: var(--radius);
+  border: none;
+  border-right: 4px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  width: 100%;
+}
+
+.workbench-workflow-item:hover {
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--on-surface);
+}
+
+.workbench-workflow-item.is-active {
+  color: #c2410c;
+  font-weight: 700;
+  background: rgba(253, 108, 0, 0.08);
+  border-right-color: var(--secondary-container);
+}
+
+.workbench-workflow-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.workbench-workflow-item.is-active .workbench-workflow-icon {
+  opacity: 1;
+  color: var(--secondary-container);
+}
+
+/* —— 主区域 —— */
+.workbench-shell {
+  padding-top: 3.25rem;
+  padding-bottom: 5.5rem;
+  min-height: 100vh;
+}
+
+@media (min-width: 1024px) {
+  .workbench-shell {
+    margin-left: var(--workbench-sidebar-width);
+    padding-top: 3.35rem;
+    padding-bottom: 5.75rem;
+  }
+}
+
+.workbench-main {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 0 1.25rem 2rem;
+}
+
+.workbench-step-header {
+  text-align: center;
+  margin-bottom: 1.35rem;
+  /* 与顶栏之间留出约一枚「步骤 1/6」徽章条的高度，避免贴太紧 */
+  margin-top: 2rem;
+}
+
+.workbench-step-badge {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(0, 91, 191, 0.1);
+  color: var(--primary);
+  /* 步骤徽章：略小于正文，保持层级 */
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+/*
+ * 步骤主标题：正文 0.875rem 的 1.5 倍 → 1.3125rem（16px 根下约 21px）
+ * 与 console.css --font-wb-crawl-body 对齐
+ */
+.workbench-step-title {
+  font-family: var(--font-display);
+  font-size: 1.3125rem;
+  font-weight: 800;
+  color: var(--on-surface);
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  margin-bottom: 0.5rem;
+}
+
+/* 与职位抓取表单正文同档 */
+.workbench-step-desc {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  max-width: 36rem;
+  margin: 0 auto;
+  line-height: 1.55;
+}
+
+/* 当前步骤面板：玻璃主卡片风格 */
+.workbench-body .workbench-step-panel {
+  display: none;
+}
+
+.workbench-body .workbench-step-panel.is-active {
+  display: block;
+  animation: workbenchFadeIn 0.35s ease;
+}
+
+@keyframes workbenchFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.workbench-body .workbench-step-panel.form-section {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  outline: 1px solid var(--ghost-border);
+  border: none;
+  box-shadow: var(--shadow);
+}
+
+/* 任务状态与日志：紧跟在当前步骤表单下方（由 JS 插入到活动面板后） */
+.workbench-body .workbench-step-panels > .status-section.workbench-task-status {
+  margin-top: 1.25rem;
+  width: 100%;
+}
+
+.workbench-body .workbench-step-panels > .status-section.workbench-task-status .status-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  outline: 1px solid var(--ghost-border);
+  border: none;
+  box-shadow: var(--shadow);
+}
+
+.workbench-body .workbench-step-panel.form-section {
+  border-radius: 1.75rem;
+  padding: 1.75rem 1.5rem;
+  margin-bottom: 0;
+}
+
+@media (min-width: 640px) {
+  .workbench-body .workbench-step-panel.form-section {
+    padding: 2rem 2rem;
+  }
+}
+
+/* 工作台内隐藏各模块自带折叠标题栏（由顶区 Step 标题代替） */
+.workbench-body .workbench-step-panel .section-header {
+  display: none;
+}
+
+.workbench-body .workbench-step-panel.collapsible-section .section-body {
+  display: block !important;
+}
+
+.workbench-body .workbench-step-panel.collapsible-section.collapsed .section-body {
+  display: block !important;
+}
+
+/* 辅助区：任务状态、结果文件 */
+.workbench-auxiliary {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.workbench-auxiliary .form-section,
+.workbench-auxiliary .result-section {
+  border-radius: var(--radius-lg);
+}
+
+.workbench-auxiliary > .result-section {
+  background: var(--surface-lowest);
+  outline: 1px solid var(--ghost-border);
+  box-shadow: var(--shadow);
+}
+
+.workbench-auxiliary .section-header {
+  display: flex;
+}
+
+/* —— 底栏 Back / Next —— */
+.workbench-bottombar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 200;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--ghost-border);
+  box-shadow: 0 -4px 24px rgba(25, 28, 30, 0.06);
+}
+
+.workbench-bottombar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  max-width: 56rem;
+  margin: 0 auto;
+}
+
+@media (min-width: 1024px) {
+  .workbench-bottombar-inner {
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+.workbench-btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--ghost-border);
+  background: var(--surface-lowest);
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, opacity 0.2s;
+}
+
+.workbench-btn-back:hover:not(:disabled) {
+  border-color: rgba(0, 91, 191, 0.2);
+  color: var(--primary);
+}
+
+.workbench-btn-back:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.workbench-step-dots {
+  display: none;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+@media (min-width: 768px) {
+  .workbench-step-dots {
+    display: flex;
+  }
+}
+
+.workbench-step-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--surface-container-high);
+  transition: background 0.2s, transform 0.2s;
+}
+
+.workbench-step-dot.is-active {
+  background: var(--secondary-container);
+  transform: scale(1.15);
+}
+
+.workbench-btn-next {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.65rem 1.35rem;
+  border-radius: var(--radius-lg);
+  border: none;
+  background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-container) 100%);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(253, 108, 0, 0.28);
+  transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+}
+
+.workbench-btn-next:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(253, 108, 0, 0.35);
+}
+
+.workbench-btn-next:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* 移动端：侧栏入口（可选，极简：仅底栏切换） */
+.workbench-mobile-step-hint {
+  display: block;
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+@media (min-width: 1024px) {
+  .workbench-mobile-step-hint {
+    display: none;
+  }
+}

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Navi AI Workbench - Step 1: Data Scraping</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-tertiary": "#ffffff",
+              "error": "#ba1a1a",
+              "on-background": "#191c1e",
+              "surface-container-high": "#e6e8ea",
+              "on-primary-container": "#ffffff",
+              "on-error-container": "#93000a",
+              "tertiary": "#9e4300",
+              "background": "#f7f9fb",
+              "tertiary-container": "#c55500",
+              "secondary-container": "#fd6c00",
+              "on-tertiary-fixed-variant": "#783100",
+              "on-primary-fixed": "#001a41",
+              "on-error": "#ffffff",
+              "surface-container-low": "#f2f4f6",
+              "surface": "#f7f9fb",
+              "on-tertiary-container": "#0e0200",
+              "surface-container": "#eceef0",
+              "on-secondary-container": "#562000",
+              "tertiary-fixed-dim": "#ffb691",
+              "surface-container-highest": "#e0e3e5",
+              "error-container": "#ffdad6",
+              "on-primary": "#ffffff",
+              "inverse-surface": "#2d3133",
+              "surface-variant": "#e0e3e5",
+              "on-secondary": "#ffffff",
+              "surface-dim": "#d8dadc",
+              "primary-fixed-dim": "#adc7ff",
+              "on-surface-variant": "#414754",
+              "on-surface": "#191c1e",
+              "primary-container": "#1a73e8",
+              "on-secondary-fixed": "#341100",
+              "tertiary-fixed": "#ffdbcb",
+              "surface-container-lowest": "#ffffff",
+              "primary-fixed": "#d8e2ff",
+              "secondary": "#9f4200",
+              "primary": "#005bbf",
+              "outline": "#727785",
+              "surface-tint": "#005bc0",
+              "secondary-fixed-dim": "#ffb692",
+              "inverse-primary": "#adc7ff",
+              "on-primary-fixed-variant": "#004493",
+              "secondary-fixed": "#ffdbcb",
+              "on-tertiary-fixed": "#341100",
+              "surface-bright": "#f7f9fb",
+              "outline-variant": "#c1c6d6",
+              "on-secondary-fixed-variant": "#7a3000",
+              "inverse-on-surface": "#eff1f3"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .grid-bg {
+            background-image: radial-gradient(circle at 1px 1px, #e0e3e5 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface grid-bg min-h-screen">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 shadow-sm dark:shadow-none">
+<div class="flex justify-between items-center px-6 py-3 max-w-full">
+<div class="flex items-center gap-6">
+<span class="text-xl font-bold tracking-tighter text-blue-700 dark:text-blue-500 font-headline">Navi AI</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-blue-700 dark:text-blue-400 border-b-2 border-blue-600 pb-1 font-manrope text-sm font-semibold tracking-wide" href="#">Dashboard</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-blue-600 transition-colors font-manrope text-sm font-semibold tracking-wide" href="#">History</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-blue-600 transition-colors font-manrope text-sm font-semibold tracking-wide" href="#">Settings</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex flex-col items-end mr-4">
+<div class="flex items-center gap-2">
+<span class="text-[10px] font-bold uppercase tracking-widest text-primary">Progress</span>
+<span class="text-xs font-bold text-on-surface">1/6</span>
+</div>
+<div class="w-24 h-1.5 bg-surface-container-high rounded-full mt-1 overflow-hidden">
+<div class="w-1/6 h-full bg-primary rounded-full"></div>
+</div>
+</div>
+<button class="p-2 text-on-surface-variant hover:bg-blue-50/50 dark:hover:bg-blue-900/20 rounded-lg transition-colors active:scale-95">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-blue-50/50 dark:hover:bg-blue-900/20 rounded-lg transition-colors active:scale-95">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-primary-fixed overflow-hidden border border-outline-variant/30">
+<img class="w-full h-full object-cover" data-alt="User profile avatar image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1wlxYcw6-bh1b1_Ul0bvqGacEy_rrZkP3009496IuuWID0K9vjlrvOJLQyfnnwG2JnEo8Xyep7SqYE8kPb28THZ78g9ZhyGOb6cdWa7vD2bkhpq2RXGT3G_9SbF9iQUEYpFHcsEvGiHTw2EAlVPM-A5IMgW94Xgkdji04uoBTV-KDGFZvLO1IwUj5oyGfWvthLb89SqOLeveK7DyGoiJwPeE3MjdmyPA1DaZ-RyL7GhydWRExcjx7w4UeGGMV1EF7TvA_c3hbKTA"/>
+</div>
+</div>
+</div>
+</header>
+<!-- SideNavBar (Workflow Stepper) -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-slate-50 dark:bg-slate-900 border-r border-slate-200/50 dark:border-slate-800/50 pt-20 flex flex-col hidden lg:flex">
+<div class="px-6 py-4 mb-4">
+<h2 class="font-manrope font-extrabold text-blue-600 text-lg">Workflow</h2>
+<p class="font-inter text-[10px] font-medium uppercase tracking-widest text-slate-500">6 Steps to Career</p>
+</div>
+<nav class="flex flex-col py-2 px-4 gap-y-2">
+<!-- Step 1: Active -->
+<div class="flex items-center gap-3 px-4 py-3 text-orange-600 dark:text-orange-400 font-bold border-r-4 border-orange-500 bg-orange-50/50 dark:bg-orange-900/10 transition-all active:translate-x-1">
+<span class="material-symbols-outlined text-xl" data-icon="search">search</span>
+<span class="font-inter text-xs font-medium uppercase tracking-widest">Data Scraping</span>
+</div>
+<!-- Step 2 -->
+<div class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 opacity-70 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:translate-x-1">
+<span class="material-symbols-outlined text-xl" data-icon="label">label</span>
+<span class="font-inter text-xs font-medium uppercase tracking-widest">Tagging</span>
+</div>
+<!-- Step 3 -->
+<div class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 opacity-70 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:translate-x-1">
+<span class="material-symbols-outlined text-xl" data-icon="analytics">analytics</span>
+<span class="font-inter text-xs font-medium uppercase tracking-widest">Deep Analysis</span>
+</div>
+<!-- Step 4 -->
+<div class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 opacity-70 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:translate-x-1">
+<span class="material-symbols-outlined text-xl" data-icon="upload_file">upload_file</span>
+<span class="font-inter text-xs font-medium uppercase tracking-widest">Resume Parsing</span>
+</div>
+<!-- Step 5 -->
+<div class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 opacity-70 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:translate-x-1">
+<span class="material-symbols-outlined text-xl" data-icon="query_stats">query_stats</span>
+<span class="font-inter text-xs font-medium uppercase tracking-widest">Matching</span>
+</div>
+<!-- Step 6 -->
+<div class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 opacity-70 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:translate-x-1">
+<span class="material-symbols-outlined text-xl" data-icon="auto_fix_high">auto_fix_high</span>
+<span class="font-inter text-xs font-medium uppercase tracking-widest">AI Rewrite</span>
+</div>
+</nav>
+<div class="mt-auto p-6">
+<button class="w-full py-3 px-4 bg-primary text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-95">
+                Save Progress
+            </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="lg:ml-64 pt-24 pb-32 px-6 min-h-screen flex items-center justify-center">
+<div class="max-w-4xl w-full">
+<!-- Header Section -->
+<div class="mb-8 text-center">
+<span class="inline-block px-3 py-1 rounded-full bg-primary-fixed text-primary font-bold text-[10px] uppercase tracking-tighter mb-4">Initial Phase</span>
+<h1 class="text-4xl md:text-5xl font-extrabold font-headline text-on-surface tracking-tight mb-2">Step 1: Data Scraping</h1>
+<p class="text-on-surface-variant max-w-xl mx-auto">Define your career targets. Our AI will traverse global job boards to find matches based on these specific architectural parameters.</p>
+</div>
+<!-- Main Input Card (Bento/Asymmetric Layout) -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
+<!-- Large Primary Input Area -->
+<div class="md:col-span-8 glass-card rounded-[2rem] p-8 shadow-sm border border-outline-variant/20 flex flex-col">
+<div class="space-y-6">
+<div class="group">
+<label class="block text-[11px] font-bold text-primary uppercase tracking-widest mb-2 px-1">Job Title/Keywords</label>
+<input class="w-full bg-surface-container-lowest border-none rounded-xl px-4 py-4 text-on-surface focus:ring-2 focus:ring-primary/20 transition-all shadow-inner font-body placeholder:text-outline-variant" placeholder="e.g. Senior UI Designer, Product Architect" type="text"/>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+<div class="group">
+<label class="block text-[11px] font-bold text-primary uppercase tracking-widest mb-2 px-1">City</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline-variant" data-icon="location_on">location_on</span>
+<input class="w-full bg-surface-container-lowest border-none rounded-xl pl-12 pr-4 py-4 text-on-surface focus:ring-2 focus:ring-primary/20 transition-all shadow-inner font-body placeholder:text-outline-variant" placeholder="New York, NY" type="text"/>
+</div>
+</div>
+<div class="group">
+<label class="block text-[11px] font-bold text-primary uppercase tracking-widest mb-2 px-1">Salary Range</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline-variant" data-icon="payments">payments</span>
+<select class="w-full bg-surface-container-lowest border-none rounded-xl pl-12 pr-4 py-4 text-on-surface focus:ring-2 focus:ring-primary/20 transition-all shadow-inner font-body appearance-none">
+<option>$80k - $120k</option>
+<option>$120k - $180k</option>
+<option>$180k - $250k</option>
+<option>$250k+</option>
+</select>
+</div>
+</div>
+</div>
+<div class="pt-4">
+<button class="w-full py-5 bg-gradient-to-r from-secondary to-secondary-container text-on-secondary rounded-2xl font-headline font-extrabold text-lg shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-95 transition-all">
+                                Start Scraping
+                            </button>
+</div>
+</div>
+</div>
+<!-- Secondary Filters Column -->
+<div class="md:col-span-4 flex flex-col gap-6">
+<div class="glass-card rounded-[2rem] p-6 shadow-sm border border-outline-variant/20 flex-1">
+<label class="block text-[11px] font-bold text-primary uppercase tracking-widest mb-4">Educational Requirements</label>
+<div class="space-y-3">
+<label class="flex items-center gap-3 p-3 rounded-xl bg-surface-container-lowest/50 hover:bg-surface-container-lowest transition-colors cursor-pointer group">
+<input checked="" class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm font-medium text-on-surface-variant group-hover:text-on-surface">Bachelor's Degree</span>
+</label>
+<label class="flex items-center gap-3 p-3 rounded-xl bg-surface-container-lowest/50 hover:bg-surface-container-lowest transition-colors cursor-pointer group">
+<input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm font-medium text-on-surface-variant group-hover:text-on-surface">Master's / PhD</span>
+</label>
+<label class="flex items-center gap-3 p-3 rounded-xl bg-surface-container-lowest/50 hover:bg-surface-container-lowest transition-colors cursor-pointer group">
+<input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm font-medium text-on-surface-variant group-hover:text-on-surface">No Degree Req.</span>
+</label>
+</div>
+</div>
+<div class="glass-card rounded-[2rem] p-6 shadow-sm border border-outline-variant/20 flex-1">
+<label class="block text-[11px] font-bold text-primary uppercase tracking-widest mb-4">Experience</label>
+<div class="space-y-2">
+<input class="w-full h-2 bg-surface-container-high rounded-lg appearance-none cursor-pointer accent-primary" type="range"/>
+<div class="flex justify-between text-[10px] font-bold text-outline uppercase tracking-wider">
+<span>Entry</span>
+<span>5+ Yrs</span>
+<span>10+ Yrs</span>
+</div>
+</div>
+<div class="mt-4 p-3 bg-primary/5 rounded-xl border border-primary/10">
+<p class="text-[10px] leading-tight text-primary font-medium">AI Insight: Senior roles are currently showing 24% higher visibility in New York.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<footer class="fixed bottom-0 w-full z-50 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+<div class="flex justify-between items-center px-8 py-4 w-full">
+<button class="text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl px-8 py-3 font-manrope text-xs font-bold hover:opacity-90 transition-opacity active:scale-98 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="arrow_back">arrow_back</span>
+                Back
+            </button>
+<div class="hidden md:flex gap-1">
+<div class="w-2 h-2 rounded-full bg-orange-500"></div>
+<div class="w-2 h-2 rounded-full bg-slate-200 dark:bg-slate-800"></div>
+<div class="w-2 h-2 rounded-full bg-slate-200 dark:bg-slate-800"></div>
+<div class="w-2 h-2 rounded-full bg-slate-200 dark:bg-slate-800"></div>
+<div class="w-2 h-2 rounded-full bg-slate-200 dark:bg-slate-800"></div>
+<div class="w-2 h-2 rounded-full bg-slate-200 dark:bg-slate-800"></div>
+</div>
+<button class="bg-orange-500 text-white rounded-xl px-8 py-3 flex items-center gap-2 shadow-lg shadow-orange-500/30 font-manrope text-xs font-bold hover:opacity-90 transition-opacity active:scale-98">
+                Next Step
+                <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</footer>
+</body></html>

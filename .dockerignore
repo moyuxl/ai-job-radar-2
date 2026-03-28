@@ -1,0 +1,15 @@
+__pycache__
+*.py[cod]
+.git
+.gitignore
+.venv
+venv
+.env
+.pytest_cache
+.mypy_cache
+.idea
+.vscode
+*.db-journal
+output/**/*.xlsx
+# 不把本机库打进镜像；容器内会新建空库（init_db）
+jobs.db

@@ -1,0 +1,45 @@
+# 密钥与本地环境（切勿提交）
+.env
+.env.local
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 本地数据库（岗位、匹配结果等）
+jobs.db
+jobs.db-journal
+
+# ---------- 爬虫 / 分析产出（勿提交；含岗位关键词文件名）----------
+# 根目录或任意路径：Boss 导出 Excel（zhipin_crawler.save_to_excel → boss_关键词_时间戳.xlsx）
+boss_*.xlsx
+**/boss_*.xlsx
+
+# 爬虫原始 JSON 等
+boss_raw_data.json
+boss_raw_data*.json
+
+# output：保留目录内 .py 工具脚本，忽略数据与简历/共性缓存
+output/resume/
+output/commonality/
+output/*.json
+output/**/*.json
+
+# 本地备份目录（常含旧代码与 .env，切勿入库）
+备份/
+
+# 日志与临时文件
+*.log
+logs/
+.task_logs/
+
+# IDE
+.idea/
+.vscode/
+
+# 操作系统
+.DS_Store
+Thumbs.db

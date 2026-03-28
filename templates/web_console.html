@@ -1,0 +1,2379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navi AI — 点亮你的求职地图</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles/console.css">
+    <link rel="stylesheet" href="/static/styles/workbench.css">
+</head>
+<body class="workbench-body">
+    <div class="radar-bg"></div>
+    <header class="workbench-topbar">
+        <div class="workbench-topbar-inner">
+            <div class="workbench-topbar-left">
+                <a href="/workbench" class="workbench-logo">Navi AI</a>
+                <a href="/" class="workbench-topbar-back" aria-label="返回首页" title="返回首页">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </a>
+                <nav class="workbench-topnav" aria-label="主导航">
+                    <span class="workbench-topnav-link is-active" aria-current="page">Dashboard</span>
+                </nav>
+            </div>
+            <div class="workbench-topbar-right">
+                <div class="workbench-user-chip" title="用户（功能占位）">用户</div>
+            </div>
+        </div>
+    </header>
+    <aside class="workbench-sidebar" aria-label="工作流程">
+        <div class="workbench-sidebar-head">
+            <h2 class="workbench-sidebar-title">Workflow</h2>
+            <p class="workbench-sidebar-sub">6 步完成闭环</p>
+        </div>
+        <nav class="workbench-workflow-nav">
+            <button type="button" class="workbench-workflow-item is-active" data-workbench-goto="0" aria-current="step">
+                <svg class="workbench-workflow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l-4 4l6 6l4-16l-18 7l4 2l2 6l3-4"/></svg>
+                <span>职位抓取</span>
+            </button>
+            <button type="button" class="workbench-workflow-item" data-workbench-goto="1">
+                <svg class="workbench-workflow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+                <span>深度分析</span>
+            </button>
+            <button type="button" class="workbench-workflow-item" data-workbench-goto="2">
+                <svg class="workbench-workflow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                <span>赛道标注</span>
+            </button>
+            <button type="button" class="workbench-workflow-item" data-workbench-goto="3">
+                <svg class="workbench-workflow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+                <span>简历上传与解析</span>
+            </button>
+            <button type="button" class="workbench-workflow-item" data-workbench-goto="4">
+                <svg class="workbench-workflow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                <span>匹配评分</span>
+            </button>
+            <button type="button" class="workbench-workflow-item" data-workbench-goto="5">
+                <svg class="workbench-workflow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
+                <span>改写 Agent</span>
+            </button>
+        </nav>
+    </aside>
+    <div class="workbench-shell">
+        <main class="workbench-main">
+            <p class="workbench-mobile-step-hint">当前步骤可在下方「上一步 / 下一步」切换</p>
+            <header class="workbench-step-header">
+                <span class="workbench-step-badge" id="workbenchStepBadge">步骤 1 / 6</span>
+                <h1 class="workbench-step-title" id="workbenchStepTitle">职位抓取</h1>
+                <p class="workbench-step-desc" id="workbenchStepDesc">设置关键词、城市与筛选条件，抓取 Boss 直聘职位列表与详情。</p>
+            </header>
+            <div class="workbench-step-panels">
+        <section class="form-section collapsible-section collapsed workbench-step-panel is-active" id="crawlSection" data-workbench-step="0">
+            <div class="section-header">
+                <h2 class="section-title"><span class="section-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l-4 4l6 6l4-16l-18 7l4 2l2 6l3-4"/></svg></span>职位抓取</h2>
+                <button type="button" class="section-collapse-btn" aria-label="折叠"><span class="section-collapse-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></button>
+            </div>
+            <div class="section-body">
+            <form id="crawlForm">
+                <div class="form-group">
+                    <label>职位关键词 *</label>
+                    <div class="keyword-presets">
+                        <button type="button" class="preset-chip" data-keyword="Python开发">Python开发</button>
+                        <button type="button" class="preset-chip" data-keyword="AI产品经理">AI产品经理</button>
+                        <button type="button" class="preset-chip" data-keyword="AI Agent开发">AI Agent开发</button>
+                        <button type="button" class="preset-chip" data-keyword="大模型">大模型</button>
+                    </div>
+                    <input type="text" id="keyword" name="keyword" placeholder="例如：Python开发、AI产品经理" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>城市</label>
+                        <select id="city" name="city">
+                            <option value="">加载中...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>学历要求</label>
+                        <select id="degree" name="degree">
+                            <option value="">加载中...</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>工作经验（可多选）</label>
+                        <div id="experienceGroup" class="checkbox-group-inline experience-group-one-line">
+                            <span class="loading-text">加载中...</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>薪资范围</label>
+                        <select id="salary" name="salary">
+                            <option value="">加载中...</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="crawl_details">爬取详情页</label>
+                        <div class="checkbox-group crawl-check-col">
+                            <input type="checkbox" id="crawl_details" name="crawl_details" checked>
+                            <label for="crawl_details" class="checkbox-text">包含职位描述</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="enable_llm_filter">LLM 语义过滤</label>
+                        <div class="checkbox-group crawl-check-col">
+                            <input type="checkbox" id="enable_llm_filter" name="enable_llm_filter">
+                            <label for="enable_llm_filter" class="checkbox-text">剔除与搜索目标不相关的岗位</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>最大页数</label>
+                        <input type="number" id="max_pages" name="max_pages" value="1" min="1" max="20">
+                    </div>
+                    <div class="form-group" id="filterModelGroup">
+                        <label>过滤模型</label>
+                        <select id="filter_model" name="filter_model">
+                            <option value="">加载中...</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button type="submit" id="startBtn" class="btn btn-primary"><span class="btn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l-4 4l6 6l4-16l-18 7l4 2l2 6l3-4"/></svg></span>开始抓取</button>
+            </form>
+            </div>
+        </section>
+        
+        <section class="form-section collapsible-section collapsed workbench-step-panel" id="analysisSection" data-workbench-step="1">
+            <div class="section-header">
+                <h2 class="section-title"><span class="section-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span>深度分析</h2>
+                <button type="button" class="section-collapse-btn" aria-label="折叠"><span class="section-collapse-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></button>
+            </div>
+            <div class="section-body">
+            <form id="analysisForm">
+                <div class="form-row form-row-analysis">
+                    <div class="form-group form-group-analysis-path">
+                        <label>原始数据文件路径</label>
+                        <input type="text" id="excel_path" name="excel_path" placeholder="例如: output/boss_AI agent 开发_xxx.xlsx" required>
+                        <small class="form-hint">填入抓取得到的 Excel 路径即可</small>
+                    </div>
+                    <div class="form-group form-group-analysis-model">
+                        <label>分析模型</label>
+                        <select id="analysis_model" name="analysis_model">
+                            <option value="">加载中...</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" id="startAnalysisBtn" class="btn btn-secondary"><span class="btn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>开始分析</button>
+            </form>
+            </div>
+        </section>
+        
+        <section class="form-section collapsible-section collapsed workbench-step-panel" id="trackLabelSection" data-workbench-step="2">
+            <div class="section-header">
+                <h2 class="section-title"><span class="section-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span>赛道标注</h2>
+                <button type="button" class="section-collapse-btn" aria-label="折叠"><span class="section-collapse-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></button>
+            </div>
+            <div class="section-body">
+            <p class="section-desc">为职位打上公司类型、岗位方向等标签，方便后面筛选和匹配。</p>
+            <form id="trackLabelForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>标注模型</label>
+                        <select id="track_label_model" name="track_label_model">
+                            <option value="">加载中...</option>
+                        </select>
+                    </div>
+                </div>
+                <p class="section-desc" style="margin-top:0">一次点击：补全未标注或缺字段的职位。</p>
+                <button type="submit" id="startTrackLabelBtn" class="btn btn-secondary"><span class="btn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/></svg></span>开始赛道标注</button>
+            </form>
+            <div class="track-filter-block">
+                <h3 class="track-filter-title">筛选后的岗位信息</h3>
+                <p class="section-desc">按条件筛选已标注岗位，可导出列表。</p>
+                <div class="track-filter-two-cols">
+                    <div class="track-filter-col">
+                        <div class="track-filter-label-row">
+                            <label>公司属性</label>
+                            <label class="track-filter-select-all-wrap">
+                                <span>全选</span>
+                                <input type="checkbox" id="trackFilterCompanyTypesAll" class="track-filter-select-all" data-target="track_company_type">
+                            </label>
+                        </div>
+                        <div id="trackFilterCompanyTypes" class="checkbox-group-inline track-filter-checks">
+                            <span class="loading-text">加载中...</span>
+                        </div>
+                    </div>
+                    <div class="track-filter-divider"></div>
+                    <div class="track-filter-col">
+                        <div class="track-filter-label-row">
+                            <label>岗位实质</label>
+                            <label class="track-filter-select-all-wrap">
+                                <span>全选</span>
+                                <input type="checkbox" id="trackFilterJobNaturesAll" class="track-filter-select-all" data-target="track_job_nature">
+                            </label>
+                        </div>
+                        <div id="trackFilterJobNatures" class="checkbox-group-inline track-filter-checks">
+                            <span class="loading-text">加载中...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="track-filter-directions-row">
+                    <div class="track-filter-col">
+                        <div class="track-filter-label-row">
+                            <label>岗位方向</label>
+                            <label class="track-filter-select-all-wrap">
+                                <span>全选</span>
+                                <input type="checkbox" id="trackFilterJobDirectionsAll" class="track-filter-select-all" data-target="track_job_direction">
+                            </label>
+                        </div>
+                        <div id="trackFilterJobDirections" class="checkbox-group-inline track-filter-checks">
+                            <span class="loading-text">加载中...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>最低置信度</label>
+                        <select id="trackFilterConfidence" name="trackFilterConfidence">
+                            <option value="">全部</option>
+                            <option value="中">中及以上</option>
+                            <option value="高">仅高</option>
+                        </select>
+                    </div>
+                    <div class="form-group form-group-actions">
+                        <label>&nbsp;</label>
+                        <div class="track-filter-actions">
+                            <button type="button" id="btnGenerateFilter" class="btn btn-secondary btn-sm">生成筛选结果</button>
+                            <button type="button" id="btnExportExcel" class="btn btn-secondary btn-sm" disabled>导出 Excel</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="track-filter-keywords-row">
+                    <label>搜索关键词</label>
+                    <div id="trackFilterKeywordTags" class="keyword-tags">
+                        <span class="loading-text">加载中...</span>
+                    </div>
+                </div>
+                <div class="track-filter-result" id="trackFilterResult">
+                    <div class="track-filter-summary" id="trackFilterSummary"></div>
+                    <div class="track-filter-table-wrap" id="trackFilterTableWrap"></div>
+                </div>
+            </div>
+            </div>
+        </section>
+        
+        <section class="form-section collapsible-section collapsed workbench-step-panel" id="resumeSection" data-workbench-step="3">
+            <div class="section-header">
+                <h2 class="section-title"><span class="section-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg></span>简历上传与解析</h2>
+                <button type="button" class="section-collapse-btn" aria-label="折叠"><span class="section-collapse-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></button>
+            </div>
+            <div class="section-body">
+            <p class="section-desc">上传 PDF，自动解析成结构化简历（需可复制文字）。</p>
+            <form id="resumeForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>简历文件（PDF）</label>
+                        <div class="file-input-wrap">
+                            <input type="file" id="resumeFile" name="resume_file" accept=".pdf" required>
+                            <div class="file-input-trigger">
+                                <span class="file-input-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg></span>
+                                <span class="file-input-text" id="resumeFileText">点击选择 PDF 文件</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>解析模型</label>
+                        <select id="resume_model" name="resume_model">
+                            <option value="">加载中...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="resume-form-actions">
+                    <button type="submit" id="btnResumeUpload" class="btn btn-secondary"><span class="btn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>上传并解析</button>
+                    <button type="button" id="btnEditPreferences" class="btn btn-ghost btn-resume-link">更改求职偏好</button>
+                </div>
+                <div class="resume-load-local">
+                    <label>或读取本地简历</label>
+                    <div class="resume-load-local-row">
+                        <select id="resumeLocalSelect" class="resume-local-select">
+                            <option value="">-- 选择已有简历 --</option>
+                        </select>
+                        <button type="button" id="btnLoadLocalResume" class="btn btn-ghost btn-resume-load"><span class="btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg></span>读取</button>
+                    </div>
+                </div>
+            </form>
+            <div id="resumeResult" class="resume-result" style="display:none">
+                <div class="resume-result-header">
+                    <span id="resumeSavedPath" class="resume-saved-path"></span>
+                    <span id="resumeTokenInfo" class="resume-token-info"></span>
+                </div>
+                <pre id="resumeProfileJson" class="resume-profile-json"></pre>
+            </div>
+            </div>
+        </section>
+
+        <section class="form-section collapsible-section collapsed workbench-step-panel" id="matchSection" data-workbench-step="4">
+            <div class="section-header">
+                <h2 class="section-title"><span class="section-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>匹配评分</h2>
+                <button type="button" class="section-collapse-btn" aria-label="折叠"><span class="section-collapse-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></button>
+            </div>
+            <div class="section-body">
+            <p class="section-desc">选简历、设条件，对岗位做匹配并查看适配度与四维评分。下方列表仅展示<strong>与当前赛道勾选、搜索关键词一致</strong>的岗位结果。</p>
+            <div class="match-config">
+                <div class="match-resume-model-row">
+                    <div class="match-field-group match-field-resume">
+                        <label for="matchResumeSelect">选择简历</label>
+                        <select id="matchResumeSelect" class="match-select">
+                            <option value="">-- 选择简历 --</option>
+                        </select>
+                    </div>
+                    <div class="match-field-group match-field-model">
+                        <label for="match_model">匹配模型</label>
+                        <select id="match_model" class="match-model-select">
+                            <option value="">加载中...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="match-hard-filter">
+                    <label>硬筛条件（可临时覆盖）</label>
+                    <div class="match-hard-filter-grid">
+                        <div class="match-hard-item">
+                            <span>薪资（K）</span>
+                            <input type="number" id="matchSalaryMin" placeholder="最低" min="0"> —
+                            <input type="number" id="matchSalaryMax" placeholder="最高" min="0">
+                        </div>
+                        <div class="match-hard-item">
+                            <span>城市</span>
+                            <input type="text" id="matchCities" placeholder="上海,杭州,远程">
+                        </div>
+                        <div class="match-hard-item">
+                            <span>排除公司类型</span>
+                            <div id="matchBlacklistChecks" class="match-blacklist-checks"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="match-config-row">
+                    <label>赛道筛选（与赛道标注步骤勾选一致）</label>
+                    <p class="match-track-hint">公司属性 / 岗位实质 / 方向 / 置信度与赛道标注区一致；可选「搜索关键词」限定抓取时使用的关键词（见上方下拉，与赛道标注快捷标签同源）</p>
+                </div>
+                <div class="match-actions">
+                    <div class="match-action-col">
+                        <label for="matchSourceKeywordSelect" class="match-action-heading">搜索关键词</label>
+                        <select id="matchSourceKeywordSelect" class="match-action-input" title="与赛道标注区历史关键词同源；选「不限制」则仅按下方赛道勾选筛选">
+                            <option value="">全部（不限制关键词）</option>
+                        </select>
+                    </div>
+                    <div class="match-action-col">
+                        <label for="btnStartMatch" class="match-action-heading">开始匹配</label>
+                        <button type="button" id="btnStartMatch" class="btn btn-secondary match-action-submit-btn">开始匹配</button>
+                    </div>
+                </div>
+            </div>
+            <div class="match-progress" id="matchProgress" style="display:none">
+                <div class="progress-bar"><div class="progress-fill" id="matchProgressFill" style="width:0%">0%</div></div>
+                <div class="progress-text" id="matchProgressText">等待开始...</div>
+                <div class="match-token-info" id="matchTokenInfo"></div>
+            </div>
+            <div class="match-results" id="matchResults">
+                <h3>匹配结果</h3>
+                <p id="matchResultsScopeHint" class="match-results-scope-hint" style="display:none" role="status"></p>
+                <div id="matchResultsList" class="match-results-list"></div>
+            </div>
+            <div class="commonality-panel" id="commonalityPanel" style="display:none;">
+                <h3>共性分析</h3>
+                <p class="section-desc">归纳多份「深度匹配」岗位里反复出现的差距与共性。<strong>请先完成匹配，并至少有几条带「深度」角标的岗位。</strong></p>
+                <div class="commonality-actions">
+                    <button type="button" id="btnCommonalityReport" class="btn btn-secondary">生成共性报告</button>
+                    <button type="button" id="btnMasterRewrite" class="btn btn-action" disabled title="请先生成共性报告">基于共性优化主简历</button>
+                    <span class="commonality-loading" id="commonalityLoading" style="display:none;">生成中，请稍候…</span>
+                    <span class="commonality-loading" id="masterRewriteLoading" style="display:none;">主简历改写中…</span>
+                </div>
+                <div class="commonality-error" id="commonalityError" style="display:none;"></div>
+                <div class="commonality-meta" id="commonalityMeta" style="display:none;"></div>
+                <div class="commonality-report" id="commonalityReport"></div>
+            </div>
+            </div>
+        </section>
+
+        <section class="form-section collapsible-section agent-section collapsed workbench-step-panel" id="agentSection" data-workbench-step="5">
+            <div class="section-header">
+                <h2 class="section-title"><span class="section-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg></span>改写 Agent</h2>
+                <button type="button" class="section-collapse-btn" aria-label="折叠"><span class="section-collapse-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></button>
+            </div>
+            <div class="section-body">
+            <p class="section-desc">先在上面生成<strong>共性报告</strong>，再点「基于共性优化主简历」</p>
+            <div class="agent-progress" id="agentProgress">
+                <div class="agent-stage" id="agentStage">空闲</div>
+                <div class="agent-logs" id="agentLogs"></div>
+            </div>
+            <div class="agent-result" id="agentResult"></div>
+            </div>
+        </section>
+
+        <section class="status-section collapsible-section collapsed workbench-task-status" id="statusSection">
+            <div class="status-card">
+                <div class="status-header section-header">
+                    <h3>任务状态与日志</h3>
+                    <div class="status-header-right">
+                        <span class="estimated-time" id="estimatedTime"></span>
+                        <span class="status-badge idle" id="statusBadge">空闲</span>
+                        <button type="button" class="section-collapse-btn" aria-label="折叠"><span class="section-collapse-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></button>
+                    </div>
+                </div>
+                <div class="section-body">
+                <div class="confirm-section" id="confirmSection">
+                    <div class="confirm-message" id="confirmMessage"></div>
+                    <button type="button" id="confirmBtn" class="btn btn-confirm"><span class="btn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></span>我已登录，继续执行</button>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%">0%</div>
+                </div>
+                
+                <div class="progress-text" id="progressText">等待开始...</div>
+                
+                <div class="logs-container" id="logsContainer">
+                    <div class="log-entry INFO">等待任务开始...</div>
+                </div>
+                </div>
+            </div>
+        </section>
+            </div><!-- .workbench-step-panels -->
+
+        <div class="workbench-auxiliary">
+        <section class="result-section collapsible-section collapsed" id="resultSection">
+            <div class="section-header">
+                <h3><span class="section-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span>结果文件</h3>
+                <button type="button" class="section-collapse-btn" aria-label="折叠"><span class="section-collapse-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span></button>
+            </div>
+            <div class="section-body">
+            <div id="resultContent"></div>
+            </div>
+        </section>
+        </div><!-- .workbench-auxiliary -->
+        </main>
+    </div><!-- .workbench-shell -->
+
+    <footer class="workbench-bottombar">
+        <div class="workbench-bottombar-inner">
+            <button type="button" class="workbench-btn-back" id="workbenchBackBtn" disabled>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                上一步
+            </button>
+            <div class="workbench-step-dots" id="workbenchStepDots" aria-hidden="true"></div>
+            <button type="button" class="workbench-btn-next" id="workbenchNextBtn">
+                下一步
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+        </div>
+    </footer>
+
+    <!-- 求职偏好弹窗 -->
+    <div id="preferenceModal" class="modal-overlay" style="display:none">
+        <div class="modal-content preference-modal">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <span class="modal-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/></svg></span>
+                    <h3>填写求职偏好</h3>
+                </div>
+                <button type="button" class="modal-close" id="preferenceModalClose" aria-label="关闭">&times;</button>
+            </div>
+            <form id="preferenceForm">
+                <input type="hidden" id="preferenceSavedPath" name="saved_path">
+                <div class="preference-form-body">
+                    <div class="preference-row preference-file-picker" id="preferenceFilePickerRow" style="display:none">
+                        <label>选择简历文件</label>
+                        <select id="preferenceFileSelect" class="preference-file-select"></select>
+                    </div>
+                    <div class="preference-section">
+                        <div class="preference-section-title">薪资与地点</div>
+                        <div class="preference-row">
+                            <label>期望薪资（K）</label>
+                            <div class="preference-inline">
+                                <input type="number" id="targetSalaryMin" name="target_salary_min" placeholder="最低" min="0" step="1">
+                                <span class="preference-range-sep">—</span>
+                                <input type="number" id="targetSalaryMax" name="target_salary_max" placeholder="最高" min="0" step="1">
+                            </div>
+                        </div>
+                        <div class="preference-row">
+                            <label>目标城市</label>
+                            <div id="preferenceCities" class="preference-chips"></div>
+                        </div>
+                    </div>
+                    <div class="preference-section">
+                        <div class="preference-section-title">公司偏好</div>
+                        <div class="preference-two-cols">
+                            <div class="preference-col">
+                                <label>偏好公司类型</label>
+                                <div id="preferenceCompanyTypes" class="preference-chips"></div>
+                            </div>
+                            <div class="preference-col">
+                                <label>排除公司类型</label>
+                                <div id="preferenceCompanyBlacklist" class="preference-chips"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="preference-section">
+                        <div class="preference-section-title">岗位偏好</div>
+                        <div class="preference-row">
+                            <label>偏好岗位实质/方向</label>
+                            <div id="preferenceTracks" class="preference-chips"></div>
+                        </div>
+                    </div>
+                    <div class="preference-section">
+                        <div class="preference-section-title">其他</div>
+                        <div class="preference-row">
+                            <label>一票否决（逗号分隔）</label>
+                            <input type="text" id="dealbreakers" name="dealbreakers" placeholder="如：996, 无社保">
+                        </div>
+                        <div class="preference-row">
+                            <label>其他备注</label>
+                            <textarea id="otherNotes" name="other_notes" rows="3" placeholder="如：希望有出海业务"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost" id="preferenceSkipBtn">跳过</button>
+                    <button type="submit" class="btn btn-primary" id="preferenceSubmitBtn">保存并合并到简历</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js" crossorigin="anonymous"></script>
+    <script>
+        let currentTaskId = null;
+        let statusCheckInterval = null;
+        let preferenceFormOptions = {};
+        let lastResumeSavedPath = localStorage.getItem('lastResumeSavedPath');
+
+        function populatePreferenceForm(prefill) {
+            const opts = preferenceFormOptions;
+            function renderChecks(containerId, items, namePrefix) {
+                const el = document.getElementById(containerId);
+                if (!el) return;
+                el.innerHTML = '';
+                (items || []).forEach(item => {
+                    const label = document.createElement('label');
+                    label.className = 'preference-chip';
+                    const cb = document.createElement('input');
+                    cb.type = 'checkbox';
+                    cb.name = namePrefix;
+                    cb.value = item.value;
+                    label.appendChild(cb);
+                    label.appendChild(document.createTextNode(item.label || item.value));
+                    el.appendChild(label);
+                });
+            }
+            renderChecks('preferenceCities', opts.cities || [], 'pref_city');
+            renderChecks('preferenceCompanyTypes', opts.company_types || [], 'pref_company_type');
+            renderChecks('preferenceCompanyBlacklist', opts.company_types || [], 'pref_company_blacklist');
+            renderChecks('preferenceTracks', opts.track_options || opts.job_natures || opts.job_directions || [], 'pref_track');
+            if (prefill) applyPreferencePrefill(prefill);
+        }
+
+        function applyPreferencePrefill(pref) {
+            if (!pref) return;
+            document.getElementById('targetSalaryMin').value = pref.target_salary_min || '';
+            document.getElementById('targetSalaryMax').value = pref.target_salary_max || '';
+            document.getElementById('dealbreakers').value = (pref.dealbreakers || []).join(', ');
+            document.getElementById('otherNotes').value = pref.other_notes || '';
+            const sets = [
+                ['pref_city', pref.target_cities],
+                ['pref_company_type', pref.company_type_preference],
+                ['pref_company_blacklist', pref.company_type_blacklist],
+                ['pref_track', pref.track_preference]
+            ];
+            sets.forEach(([name, values]) => {
+                const vals = new Set((values || []).map(String));
+                document.querySelectorAll(`input[name="${name}"]`).forEach(cb => {
+                    cb.checked = vals.has(String(cb.value));
+                });
+            });
+        }
+
+        function showPreferenceModal(savedPath, options) {
+            options = options || {};
+            document.getElementById('preferenceSavedPath').value = savedPath;
+            document.getElementById('preferenceFilePickerRow').style.display = options.showFilePicker ? 'block' : 'none';
+            populatePreferenceForm(options.prefill || null);
+            document.getElementById('preferenceModal').style.display = 'flex';
+        }
+
+        async function openEditPreferenceModal() {
+            const listRes = await fetch('/api/resume/list');
+            const listData = await listRes.json();
+            const files = listData.files || [];
+            if (files.length === 0) {
+                alert('请先上传简历解析');
+                return;
+            }
+            const pickerRow = document.getElementById('preferenceFilePickerRow');
+            const selectEl = document.getElementById('preferenceFileSelect');
+            const defaultPath = lastResumeSavedPath && files.some(f => f.path === lastResumeSavedPath) ? lastResumeSavedPath : (files[0] && files[0].path);
+            pickerRow.style.display = files.length > 1 ? 'block' : 'none';
+            selectEl.innerHTML = '';
+            files.forEach(f => {
+                const opt = document.createElement('option');
+                opt.value = f.path;
+                opt.textContent = f.name + (f.path === lastResumeSavedPath ? ' (当前)' : '');
+                if (f.path === defaultPath) opt.selected = true;
+                selectEl.appendChild(opt);
+            });
+            document.getElementById('preferenceSavedPath').value = defaultPath;
+            populatePreferenceForm(null);
+            document.getElementById('preferenceModal').style.display = 'flex';
+            const loadAndPrefill = async (path) => {
+                const res = await fetch('/api/resume/load', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path }) });
+                const data = await res.json();
+                if (res.ok && data.preferences) applyPreferencePrefill(data.preferences);
+            };
+            await loadAndPrefill(defaultPath);
+            selectEl.onchange = async () => {
+                const path = selectEl.value;
+                document.getElementById('preferenceSavedPath').value = path;
+                await loadAndPrefill(path);
+            };
+        }
+
+        function hidePreferenceModal() {
+            document.getElementById('preferenceModal').style.display = 'none';
+        }
+
+        async function loadOptions() {
+            const formSections = document.querySelectorAll('.form-section');
+            formSections.forEach(s => s.classList.add('loading'));
+            try {
+                const citiesRes = await fetch('/api/options/cities');
+                const citiesData = await citiesRes.json();
+                const citySelect = document.getElementById('city');
+                citySelect.innerHTML = '';
+                citiesData.options.forEach(option => {
+                    const opt = document.createElement('option');
+                    opt.value = option.code;
+                    opt.textContent = option.name;
+                    if (option.code === '100010000') opt.selected = true;
+                    citySelect.appendChild(opt);
+                });
+                
+                const degreesRes = await fetch('/api/options/degrees');
+                const degreesData = await degreesRes.json();
+                const degreeSelect = document.getElementById('degree');
+                degreeSelect.innerHTML = '';
+                degreesData.options.forEach(option => {
+                    const opt = document.createElement('option');
+                    opt.value = option.code;
+                    opt.textContent = option.name;
+                    if (option.code === '0') opt.selected = true;
+                    degreeSelect.appendChild(opt);
+                });
+                
+                const experiencesRes = await fetch('/api/options/experiences');
+                const experiencesData = await experiencesRes.json();
+                const experienceGroup = document.getElementById('experienceGroup');
+                experienceGroup.innerHTML = '';
+                experiencesData.options.forEach(option => {
+                    const label = document.createElement('label');
+                    label.className = 'checkbox-inline';
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.name = 'experience';
+                    checkbox.value = option.code;
+                    checkbox.dataset.code = option.code;
+                    if (option.code === '') checkbox.checked = true;
+                    label.appendChild(checkbox);
+                    label.appendChild(document.createTextNode(' ' + option.name));
+                    experienceGroup.appendChild(label);
+                });
+                
+                const salariesRes = await fetch('/api/options/salaries');
+                const salariesData = await salariesRes.json();
+                const salarySelect = document.getElementById('salary');
+                salarySelect.innerHTML = '';
+                salariesData.options.forEach(option => {
+                    const opt = document.createElement('option');
+                    opt.value = option.code;
+                    opt.textContent = option.name;
+                    if (option.code === '') opt.selected = true;
+                    salarySelect.appendChild(opt);
+                });
+                
+                const modelsRes = await fetch('/api/options/models');
+                const modelsData = await modelsRes.json();
+                const modelSelect = document.getElementById('analysis_model');
+                modelSelect.innerHTML = '';
+                modelsData.options.forEach(option => {
+                    const opt = document.createElement('option');
+                    opt.value = option.id;
+                    opt.textContent = option.name;
+                    if (modelsData.options.indexOf(option) === 0) opt.selected = true;
+                    modelSelect.appendChild(opt);
+                });
+                
+                const filterModelSelect = document.getElementById('filter_model');
+                filterModelSelect.innerHTML = '';
+                modelsData.options.forEach(option => {
+                    const opt = document.createElement('option');
+                    opt.value = option.id;
+                    opt.textContent = option.name;
+                    if (modelsData.options.indexOf(option) === 0) opt.selected = true;
+                    filterModelSelect.appendChild(opt);
+                });
+                const trackLabelModelSelect = document.getElementById('track_label_model');
+                if (trackLabelModelSelect) {
+                    trackLabelModelSelect.innerHTML = '';
+                    modelsData.options.forEach(option => {
+                        const opt = document.createElement('option');
+                        opt.value = option.id;
+                        opt.textContent = option.name;
+                        if (modelsData.options.indexOf(option) === 0) opt.selected = true;
+                        trackLabelModelSelect.appendChild(opt);
+                    });
+                }
+                const resumeModelSelect = document.getElementById('resume_model');
+                if (resumeModelSelect) {
+                    resumeModelSelect.innerHTML = '';
+                    modelsData.options.forEach(option => {
+                        const opt = document.createElement('option');
+                        opt.value = option.id;
+                        opt.textContent = option.name;
+                        if (modelsData.options.indexOf(option) === 0) opt.selected = true;
+                        resumeModelSelect.appendChild(opt);
+                    });
+                }
+                const resumeListRes = await fetch('/api/resume/list');
+                const resumeListData = await resumeListRes.json();
+                const resumeLocalSelect = document.getElementById('resumeLocalSelect');
+                if (resumeLocalSelect) {
+                    resumeLocalSelect.innerHTML = '<option value="">-- 选择已有简历 --</option>';
+                    (resumeListData.files || []).forEach(f => {
+                        const opt = document.createElement('option');
+                        opt.value = f.path;
+                        opt.textContent = f.name;
+                        resumeLocalSelect.appendChild(opt);
+                    });
+                }
+                const matchResumeSelect = document.getElementById('matchResumeSelect');
+                if (matchResumeSelect) {
+                    matchResumeSelect.innerHTML = '<option value="">-- 选择简历 --</option>';
+                    (resumeListData.files || []).forEach(f => {
+                        const opt = document.createElement('option');
+                        opt.value = f.path;
+                        opt.textContent = f.name;
+                        if (lastResumeSavedPath && f.path === lastResumeSavedPath) opt.selected = true;
+                        matchResumeSelect.appendChild(opt);
+                    });
+                }
+                const prefRes = await fetch('/api/options/preference-form');
+                const prefData = await prefRes.json();
+                preferenceFormOptions = prefData;
+                const matchBlacklistEl = document.getElementById('matchBlacklistChecks');
+                if (matchBlacklistEl && prefData.company_types) {
+                    matchBlacklistEl.innerHTML = '';
+                    prefData.company_types.forEach(item => {
+                        const label = document.createElement('label');
+                        label.className = 'checkbox-inline';
+                        const cb = document.createElement('input');
+                        cb.type = 'checkbox';
+                        cb.name = 'match_blacklist';
+                        cb.value = item.value;
+                        label.appendChild(cb);
+                        label.appendChild(document.createTextNode(' ' + (item.label || item.value)));
+                        matchBlacklistEl.appendChild(label);
+                    });
+                }
+                const matchModelSelect = document.getElementById('match_model');
+                if (matchModelSelect) {
+                    matchModelSelect.innerHTML = '';
+                    modelsData.options.forEach(option => {
+                        const opt = document.createElement('option');
+                        opt.value = option.id;
+                        opt.textContent = option.name;
+                        if (modelsData.options.indexOf(option) === 0) opt.selected = true;
+                        matchModelSelect.appendChild(opt);
+                    });
+                }
+                const companyTypesRes = await fetch('/api/options/company-types');
+                const companyTypesData = await companyTypesRes.json();
+                const companyTypesEl = document.getElementById('trackFilterCompanyTypes');
+                if (companyTypesEl) {
+                    companyTypesEl.innerHTML = '';
+                    (companyTypesData.options || []).forEach(name => {
+                        const label = document.createElement('label');
+                        label.className = 'checkbox-inline';
+                        const cb = document.createElement('input');
+                        cb.type = 'checkbox';
+                        cb.name = 'track_company_type';
+                        cb.value = name;
+                        label.appendChild(cb);
+                        label.appendChild(document.createTextNode(' ' + name));
+                        companyTypesEl.appendChild(label);
+                    });
+                }
+                const jobNaturesRes = await fetch('/api/options/job-natures');
+                const jobNaturesData = await jobNaturesRes.json();
+                const jobNaturesEl = document.getElementById('trackFilterJobNatures');
+                if (jobNaturesEl) {
+                    jobNaturesEl.innerHTML = '';
+                    (jobNaturesData.options || []).forEach(name => {
+                        const label = document.createElement('label');
+                        label.className = 'checkbox-inline';
+                        const cb = document.createElement('input');
+                        cb.type = 'checkbox';
+                        cb.name = 'track_job_nature';
+                        cb.value = name;
+                        label.appendChild(cb);
+                        label.appendChild(document.createTextNode(' ' + name));
+                        jobNaturesEl.appendChild(label);
+                    });
+                }
+                const jobDirectionsRes = await fetch('/api/options/job-directions');
+                const jobDirectionsData = await jobDirectionsRes.json();
+                const jobDirectionsEl = document.getElementById('trackFilterJobDirections');
+                if (jobDirectionsEl) {
+                    jobDirectionsEl.innerHTML = '';
+                    (jobDirectionsData.options || []).forEach(opt => {
+                        jobDirectionLabels[opt.value] = opt.label || opt.value;
+                        const label = document.createElement('label');
+                        label.className = 'checkbox-inline';
+                        const cb = document.createElement('input');
+                        cb.type = 'checkbox';
+                        cb.name = 'track_job_direction';
+                        cb.value = opt.value;
+                        label.appendChild(cb);
+                        label.appendChild(document.createTextNode(' ' + (opt.label || opt.value)));
+                        jobDirectionsEl.appendChild(label);
+                    });
+                }
+                const keywordsRes = await fetch('/api/options/source-keywords');
+                const keywordsData = await keywordsRes.json();
+                const keywords = keywordsData.keywords || [];
+                const keywordTagsEl = document.getElementById('trackFilterKeywordTags');
+                if (keywordTagsEl) {
+                    keywordTagsEl.innerHTML = '';
+                    if (keywords.length === 0) {
+                        keywordTagsEl.innerHTML = '<span class="keyword-tags-empty">暂无历史搜索关键词</span>';
+                    } else {
+                        keywords.forEach(kw => {
+                            const tag = document.createElement('button');
+                            tag.type = 'button';
+                            tag.className = 'keyword-tag preset-chip';
+                            tag.textContent = kw;
+                            tag.dataset.keyword = kw;
+                            keywordTagsEl.appendChild(tag);
+                        });
+                    }
+                }
+                const matchKwSel = document.getElementById('matchSourceKeywordSelect');
+                if (matchKwSel) {
+                    const prev = matchKwSel.value;
+                    matchKwSel.innerHTML = '<option value="">全部（不限制关键词）</option>';
+                    keywords.forEach(kw => {
+                        const opt = document.createElement('option');
+                        opt.value = kw;
+                        opt.textContent = kw;
+                        matchKwSel.appendChild(opt);
+                    });
+                    if (prev && Array.from(matchKwSel.options).some(o => o.value === prev)) {
+                        matchKwSel.value = prev;
+                    }
+                }
+                formSections.forEach(s => s.classList.remove('loading'));
+                bindTrackFilterSelectAll();
+                selectAllTrackFilters();
+                if (lastResumeSavedPath) {
+                    const ms = document.getElementById('matchResumeSelect');
+                    if (ms && ms.value === lastResumeSavedPath) ms.dispatchEvent(new Event('change'));
+                }
+            } catch (error) {
+                console.error('加载选项失败:', error);
+                formSections.forEach(s => s.classList.remove('loading'));
+            }
+        }
+        
+        function selectAllTrackFilters() {
+            ['track_company_type', 'track_job_nature', 'track_job_direction'].forEach(name => {
+                document.querySelectorAll(`input[name="${name}"]`).forEach(cb => { cb.checked = true; });
+                const allCb = document.querySelector(`.track-filter-select-all[data-target="${name}"]`);
+                if (allCb) allCb.checked = true;
+            });
+        }
+        
+        function bindTrackFilterSelectAll() {
+            document.querySelectorAll('.track-filter-select-all').forEach(allCb => {
+                allCb.onclick = function() {
+                    const name = this.dataset.target;
+                    document.querySelectorAll(`input[name="${name}"]`).forEach(cb => { cb.checked = this.checked; });
+                };
+            });
+        }
+
+        const WORKBENCH_STEPS = [
+            { title: '职位抓取', desc: '设置关键词、城市与筛选条件，抓取 Boss 直聘职位列表与详情。' },
+            { title: '深度分析', desc: '选择抓取得到的 Excel 与分析模型，生成结构化岗位分析与评分。' },
+            { title: '赛道标注', desc: '为职位标注公司类型、岗位实质与方向，并支持按条件筛选与导出。' },
+            { title: '简历上传与解析', desc: '上传 PDF 或读取已有简历 JSON，解析 profile 并填写求职偏好。' },
+            { title: '匹配评分', desc: '选择简历与硬筛条件，生成匹配结果、共性分析与深度改写入口。' },
+            { title: '改写 Agent', desc: '查看主简历改写进度与结果，基于共性报告优化投递材料。' }
+        ];
+        const WORKBENCH_STEP_TOTAL = WORKBENCH_STEPS.length;
+        let workbenchCurrentStep = 0;
+
+        function workbenchRenderDots(container, activeIndex) {
+            if (!container) return;
+            container.innerHTML = '';
+            for (let d = 0; d < WORKBENCH_STEP_TOTAL; d++) {
+                const span = document.createElement('span');
+                span.className = 'workbench-step-dot' + (d === activeIndex ? ' is-active' : '');
+                container.appendChild(span);
+            }
+        }
+
+        function workbenchMountStatusUnderActiveStep() {
+            const active = document.querySelector('.workbench-step-panel.is-active');
+            const status = document.getElementById('statusSection');
+            if (active && status) {
+                active.insertAdjacentElement('afterend', status);
+            }
+        }
+
+        function workbenchApplyStep(index) {
+            const i = Math.max(0, Math.min(WORKBENCH_STEP_TOTAL - 1, index));
+            workbenchCurrentStep = i;
+            const step = WORKBENCH_STEPS[i];
+            const badge = document.getElementById('workbenchStepBadge');
+            const titleEl = document.getElementById('workbenchStepTitle');
+            const descEl = document.getElementById('workbenchStepDesc');
+            const backBtn = document.getElementById('workbenchBackBtn');
+            const nextBtn = document.getElementById('workbenchNextBtn');
+            if (badge) badge.textContent = '步骤 ' + (i + 1) + ' / ' + WORKBENCH_STEP_TOTAL;
+            if (titleEl) titleEl.textContent = step.title;
+            if (descEl) descEl.textContent = step.desc;
+            document.querySelectorAll('.workbench-step-panel').forEach(el => {
+                const si = parseInt(el.getAttribute('data-workbench-step'), 10);
+                el.classList.toggle('is-active', si === i);
+            });
+            workbenchMountStatusUnderActiveStep();
+            document.querySelectorAll('.workbench-workflow-item').forEach(el => {
+                const si = parseInt(el.getAttribute('data-workbench-goto'), 10);
+                el.classList.toggle('is-active', si === i);
+                if (si === i) el.setAttribute('aria-current', 'step');
+                else el.removeAttribute('aria-current');
+            });
+            if (backBtn) backBtn.disabled = i === 0;
+            if (nextBtn) {
+                const isLast = i >= WORKBENCH_STEP_TOTAL - 1;
+                nextBtn.disabled = isLast;
+                nextBtn.innerHTML = isLast
+                    ? '<span>最后一步</span>'
+                    : '下一步<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+            }
+            workbenchRenderDots(document.getElementById('workbenchStepDots'), i);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.workbenchGoToStep = workbenchApplyStep;
+
+        function initWorkbenchChrome() {
+            const backBtn = document.getElementById('workbenchBackBtn');
+            const nextBtn = document.getElementById('workbenchNextBtn');
+            document.querySelectorAll('.workbench-workflow-item').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    workbenchApplyStep(parseInt(btn.getAttribute('data-workbench-goto'), 10));
+                });
+            });
+            if (backBtn) backBtn.addEventListener('click', () => workbenchApplyStep(workbenchCurrentStep - 1));
+            if (nextBtn) nextBtn.addEventListener('click', () => workbenchApplyStep(workbenchCurrentStep + 1));
+            workbenchApplyStep(0);
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            initWorkbenchChrome();
+            loadOptions();
+            document.querySelectorAll('.section-collapse-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const section = btn.closest('.collapsible-section');
+                    if (section) section.classList.toggle('collapsed');
+                });
+            });
+            document.querySelectorAll('.preset-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    document.getElementById('keyword').value = chip.dataset.keyword;
+                    document.getElementById('keyword').focus();
+                });
+            });
+        });
+        
+        document.getElementById('crawlForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const expChecked = Array.from(document.querySelectorAll('input[name="experience"]:checked'))
+                .map(cb => cb.value);
+            const experience = expChecked.includes('') ? '' : expChecked.filter(c => c).join(',');
+            const formData = {
+                keyword: document.getElementById('keyword').value,
+                city: document.getElementById('city').value || '100010000',
+                degree: document.getElementById('degree').value || '',
+                experience: experience,
+                salary: document.getElementById('salary').value || '',
+                max_pages: parseInt(document.getElementById('max_pages').value) || 1,
+                crawl_details: document.getElementById('crawl_details').checked,
+                enable_llm_filter: document.getElementById('enable_llm_filter').checked,
+                filter_model_id: document.getElementById('filter_model').value || ''
+            };
+            try {
+                const response = await fetch('/api/crawl/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    currentTaskId = data.task_id;
+                    document.getElementById('startBtn').disabled = true;
+                    document.getElementById('startAnalysisBtn').disabled = true;
+                    document.getElementById('startTrackLabelBtn').disabled = true;
+                    document.getElementById('statusSection').classList.add('show');
+                    startStatusPolling();
+                } else {
+                    alert('启动失败: ' + data.detail);
+                }
+            } catch (error) {
+                alert('请求失败: ' + error.message);
+            }
+        });
+        
+        document.getElementById('analysisForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const excelPath = document.getElementById('excel_path').value.trim();
+            if (!excelPath) {
+                alert('请输入原始数据文件路径');
+                return;
+            }
+            try {
+                const modelId = document.getElementById('analysis_model').value || '';
+                const response = await fetch('/api/analysis/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ excel_path: excelPath, model_id: modelId })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    currentTaskId = data.task_id;
+                    document.getElementById('startAnalysisBtn').disabled = true;
+                    document.getElementById('startTrackLabelBtn').disabled = true;
+                    document.getElementById('statusSection').classList.add('show');
+                    startStatusPolling();
+                } else {
+                    alert('启动分析失败: ' + data.detail);
+                }
+            } catch (error) {
+                alert('请求失败: ' + error.message);
+            }
+        });
+        
+        document.getElementById('resumeFile').addEventListener('change', function() {
+            const wrap = this.closest('.file-input-wrap');
+            const textEl = document.getElementById('resumeFileText');
+            if (this.files && this.files[0]) {
+                textEl.textContent = this.files[0].name;
+                wrap.classList.add('has-file');
+            } else {
+                textEl.textContent = '点击选择 PDF 文件';
+                wrap.classList.remove('has-file');
+            }
+        });
+        
+        document.getElementById('resumeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('resumeFile');
+            const modelId = document.getElementById('resume_model').value || '';
+            if (!fileInput.files || !fileInput.files[0]) {
+                alert('请选择 PDF 文件');
+                return;
+            }
+            const btn = document.getElementById('btnResumeUpload');
+            btn.disabled = true;
+            btn.textContent = '解析中...';
+            const resultEl = document.getElementById('resumeResult');
+            resultEl.style.display = 'none';
+            try {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                formData.append('model_id', modelId);
+                const response = await fetch('/api/resume/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.detail || '解析失败');
+                lastResumeSavedPath = data.saved_path;
+                localStorage.setItem('lastResumeSavedPath', data.saved_path);
+                const listRes = await fetch('/api/resume/list');
+                const listData = await listRes.json();
+                const sel = document.getElementById('resumeLocalSelect');
+                if (sel) {
+                    sel.innerHTML = '<option value="">-- 选择已有简历 --</option>';
+                    (listData.files || []).forEach(f => {
+                        const opt = document.createElement('option');
+                        opt.value = f.path;
+                        opt.textContent = f.name;
+                        if (f.path === data.saved_path) opt.selected = true;
+                        sel.appendChild(opt);
+                    });
+                }
+                document.getElementById('resumeSavedPath').textContent = '已保存: ' + data.saved_path;
+                const ti = data.token_info || {};
+                const tokenEl = document.getElementById('resumeTokenInfo');
+                tokenEl.textContent = ti.total_tokens ? ` | Token 输入 ${ti.prompt_tokens || 0}, 输出 ${ti.completion_tokens || 0}, 合计 ${ti.total_tokens}` : '';
+                document.getElementById('resumeProfileJson').textContent = JSON.stringify(data.profile, null, 2);
+                resultEl.style.display = 'block';
+                showPreferenceModal(data.saved_path, { showFilePicker: false });
+                fileInput.value = '';
+                document.getElementById('resumeFileText').textContent = '点击选择 PDF 文件';
+                fileInput.closest('.file-input-wrap').classList.remove('has-file');
+            } catch (err) {
+                alert('简历解析失败: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span class="btn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>上传并解析';
+            }
+        });
+
+        document.getElementById('btnEditPreferences').addEventListener('click', openEditPreferenceModal);
+
+        async function loadLocalResume() {
+            const selectEl = document.getElementById('resumeLocalSelect');
+            const path = selectEl.value;
+            if (!path) {
+                alert('请先选择已有简历');
+                return;
+            }
+            try {
+                const res = await fetch('/api/resume/load', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path }) });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || '加载失败');
+                lastResumeSavedPath = path;
+                localStorage.setItem('lastResumeSavedPath', path);
+                document.getElementById('resumeSavedPath').textContent = '已加载: ' + path;
+                document.getElementById('resumeTokenInfo').textContent = '（本地读取，无 Token 消耗）';
+                const displayData = { profile: data.profile || {} };
+                if (data.preferences && Object.keys(data.preferences).length > 0) {
+                    displayData.preferences = data.preferences;
+                }
+                document.getElementById('resumeProfileJson').textContent = JSON.stringify(displayData, null, 2);
+                document.getElementById('resumeResult').style.display = 'block';
+            } catch (err) {
+                alert('读取失败: ' + err.message);
+            }
+        }
+
+        document.getElementById('btnLoadLocalResume').addEventListener('click', loadLocalResume);
+        document.getElementById('resumeLocalSelect').addEventListener('change', function() {
+            if (this.value) loadLocalResume();
+        });
+
+        document.getElementById('matchResumeSelect').addEventListener('change', async function() {
+            const path = this.value;
+            if (!path) return;
+            try {
+                const res = await fetch('/api/resume/load', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path }) });
+                const data = await res.json();
+                if (res.ok && data.preferences) {
+                    const p = data.preferences;
+                    document.getElementById('matchSalaryMin').value = p.target_salary_min || '';
+                    document.getElementById('matchSalaryMax').value = p.target_salary_max || '';
+                    document.getElementById('matchCities').value = (p.target_cities || []).join(', ');
+                    document.querySelectorAll('input[name="match_blacklist"]').forEach(cb => {
+                        cb.checked = (p.company_type_blacklist || []).includes(cb.value);
+                    });
+                }
+                loadMatchResults(path);
+            } catch (e) { console.error(e); }
+        });
+
+        let currentMatchResumePath = '';
+        const MASTER_JOB_ID = '__COMMONALITY_MASTER__';
+        window.lastCommonalityReport = null;
+        /** null | 'cache' 上次展示来自本地文件 | 'fresh' 上次为本次会话内 LLM 新生成 */
+        window.commonalityReportState = null;
+
+        /** 仅展示符合当前赛道勾选 + 搜索关键词的岗位（与「开始匹配」范围一致） */
+        function filterMatchResultsForView(results) {
+            if (!results || !results.length) return [];
+            return results.filter(function(r) {
+                const p = getMatchTrackParams();
+                if (p.company_types && p.company_types.length) {
+                    if (p.company_types.indexOf(r.company_type || '') < 0) return false;
+                }
+                if (p.job_natures && p.job_natures.length) {
+                    if (p.job_natures.indexOf(r.job_nature || '') < 0) return false;
+                }
+                if (p.job_direction_primaries && p.job_direction_primaries.length) {
+                    if (p.job_direction_primaries.indexOf(r.job_direction_primary || '') < 0) return false;
+                }
+                const mc = (p.min_confidence || '').trim();
+                if (mc === '高') {
+                    if ((r.track_confidence || '') !== '高') return false;
+                } else if (mc === '中') {
+                    const tc = r.track_confidence || '';
+                    if (tc !== '高' && tc !== '中') return false;
+                }
+                if (p.source_keywords && p.source_keywords.length) {
+                    const sk = (r.source_keyword || '').trim().toLowerCase();
+                    let ok = false;
+                    for (let i = 0; i < p.source_keywords.length; i++) {
+                        if (sk === (p.source_keywords[i] || '').trim().toLowerCase()) { ok = true; break; }
+                    }
+                    if (!ok) return false;
+                }
+                return true;
+            });
+        }
+
+        async function loadMatchResults(resumePath) {
+            const listEl = document.getElementById('matchResultsList');
+            const hintEl = document.getElementById('matchResultsScopeHint');
+            if (!listEl) return;
+            currentMatchResumePath = resumePath || '';
+            const panel = document.getElementById('commonalityPanel');
+            if (panel) {
+                panel.style.display = resumePath ? 'block' : 'none';
+                const cr = document.getElementById('commonalityReport');
+                const ce = document.getElementById('commonalityError');
+                const cm = document.getElementById('commonalityMeta');
+                if (cr) cr.innerHTML = '';
+                if (ce) { ce.style.display = 'none'; ce.textContent = ''; }
+                if (cm) { cm.style.display = 'none'; cm.textContent = ''; }
+                window.lastCommonalityReport = null;
+                window.commonalityReportState = null;
+                const bmr = document.getElementById('btnMasterRewrite');
+                if (bmr) { bmr.disabled = true; bmr.title = '请先生成共性报告'; }
+            }
+            try {
+                const res = await fetch('/api/match/results?resume_path=' + encodeURIComponent(resumePath));
+                const data = await res.json();
+                const raw = data.results || [];
+                const filtered = filterMatchResultsForView(raw);
+                if (hintEl) {
+                    if (!resumePath || !raw.length) {
+                        hintEl.style.display = 'none';
+                        hintEl.textContent = '';
+                    } else if (filtered.length < raw.length) {
+                        hintEl.textContent = '当前筛选下展示 ' + filtered.length + ' 条（该简历共有 ' + raw.length + ' 条匹配记录；已隐藏不符合当前赛道/关键词的条目）';
+                        hintEl.style.display = 'block';
+                    } else if (!filtered.length) {
+                        hintEl.textContent = '当前赛道/关键词下没有可展示的匹配结果（库中该简历共有 ' + raw.length + ' 条）。请调整筛选或先对当前范围执行「开始匹配」。';
+                        hintEl.style.display = 'block';
+                    } else {
+                        hintEl.style.display = 'none';
+                        hintEl.textContent = '';
+                    }
+                }
+                if (!filtered.length && raw.length) {
+                    listEl.innerHTML = '<p class="match-empty">当前筛选条件下暂无匹配结果。请放宽赛道/关键词，或先点击「开始匹配」生成该范围内的评分。</p>';
+                    return;
+                }
+                renderMatchResults(filtered, resumePath);
+            } catch (e) {
+                if (hintEl) { hintEl.style.display = 'none'; hintEl.textContent = ''; }
+                listEl.innerHTML = '<p class="match-empty">加载失败</p>';
+            }
+        }
+
+        (function bindMatchListRefreshOnScopeChange() {
+            if (window._matchListScopeRefreshBound) return;
+            window._matchListScopeRefreshBound = true;
+            document.addEventListener('change', function(e) {
+                const t = e.target;
+                if (!t) return;
+                if (t.id === 'matchResumeSelect' || t.id === 'match_model') return;
+                if (t.id !== 'matchSourceKeywordSelect' && t.id !== 'trackFilterConfidence') {
+                    const nm = t.name;
+                    if (nm !== 'track_company_type' && nm !== 'track_job_nature' && nm !== 'track_job_direction') return;
+                }
+                const rp = document.getElementById('matchResumeSelect') && document.getElementById('matchResumeSelect').value;
+                if (rp) loadMatchResults(rp);
+            });
+        })();
+
+        /** 0 未标记 1 已投 2 不投（叉） */
+        function normalizeAppliedStatus(v) {
+            if (v === true || v === 1) return 1;
+            if (v === 2 || v === '2') return 2;
+            return 0;
+        }
+
+        function nextAppliedOnLeftClick(cur) {
+            if (cur === 0) return 1;
+            if (cur === 1) return 0;
+            return 1;
+        }
+
+        function syncAppliedButtonUi(btn, status) {
+            const st = normalizeAppliedStatus(status);
+            btn.classList.remove('match-applied-status-0', 'match-applied-status-1', 'match-applied-status-2');
+            btn.classList.add('match-applied-status-' + st);
+            btn.setAttribute('data-applied-status', String(st));
+            const glyphEl = btn.querySelector('.match-applied-glyph');
+            const labelEl = btn.querySelector('.match-applied-label');
+            if (glyphEl) {
+                glyphEl.className = 'match-applied-glyph ' + (st === 1 ? 'is-check' : (st === 2 ? 'is-cross' : 'is-empty'));
+                glyphEl.textContent = st === 1 ? '\u2713' : (st === 2 ? '\u2717' : '');
+            }
+            if (labelEl) labelEl.textContent = st === 2 ? '不投' : '已投';
+            const aria = st === 0 ? '未标记，左键已投、右键不投' : (st === 1 ? '已投递' : '标记为不投');
+            btn.setAttribute('aria-label', aria);
+        }
+
+        async function persistMatchAppliedStatus(btn, jobId, rp, nextStatus, prevStatus) {
+            try {
+                const res = await fetch('/api/match/applied', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ job_id: jobId, resume_path: rp, applied_status: nextStatus })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error((data && data.detail) || '保存失败');
+                syncAppliedButtonUi(btn, nextStatus);
+            } catch (err) {
+                alert('更新投递状态失败: ' + err.message);
+                syncAppliedButtonUi(btn, prevStatus);
+            }
+        }
+
+        function buildAppliedButtonHtml(jobId, status) {
+            const st = normalizeAppliedStatus(status);
+            const escJob = String(jobId).replace(/"/g, '&quot;');
+            const glyph = st === 1
+                ? '<span class="match-applied-glyph is-check" aria-hidden="true">✓</span>'
+                : (st === 2
+                    ? '<span class="match-applied-glyph is-cross" aria-hidden="true">✗</span>'
+                    : '<span class="match-applied-glyph is-empty" aria-hidden="true"></span>');
+            const label = st === 2 ? '不投' : '已投';
+            const title = '左键：已投 ✓（再点取消）｜右键：不投 ✗';
+            const aria0 = st === 0 ? '未标记' : (st === 1 ? '已投递' : '不投');
+            return `<button type="button" class="match-applied-btn match-applied-status-${st}" data-job-id="${escJob}" data-applied-status="${st}" title="${title.replace(/"/g, '&quot;')}" aria-label="${aria0.replace(/"/g, '&quot;')}">${glyph}<span class="match-applied-label">${label}</span></button>`;
+        }
+
+        (function bindMatchAppliedOnce() {
+            const el = document.getElementById('matchResultsList');
+            if (!el || el._matchAppliedBound) return;
+            el._matchAppliedBound = true;
+            el.addEventListener('click', function(e) {
+                const btn = e.target.closest('.match-applied-btn');
+                if (!btn) return;
+                const jobId = btn.getAttribute('data-job-id');
+                const rp = currentMatchResumePath;
+                if (!jobId || !rp) return;
+                const cur = parseInt(btn.getAttribute('data-applied-status') || '0', 10) || 0;
+                const next = nextAppliedOnLeftClick(cur);
+                persistMatchAppliedStatus(btn, jobId, rp, next, cur);
+            });
+            el.addEventListener('contextmenu', function(e) {
+                const btn = e.target.closest('.match-applied-btn');
+                if (!btn) return;
+                e.preventDefault();
+                const jobId = btn.getAttribute('data-job-id');
+                const rp = currentMatchResumePath;
+                if (!jobId || !rp) return;
+                const cur = parseInt(btn.getAttribute('data-applied-status') || '0', 10) || 0;
+                const next = 2;
+                if (cur === next) return;
+                persistMatchAppliedStatus(btn, jobId, rp, next, cur);
+            });
+        })();
+
+        function formatCommonalityReport(rep) {
+            if (!rep) return '';
+            let html = '';
+            if (rep.common_requirements) {
+                html += '<h4>共同要求</h4><div class="commonality-text commonality-md">' + renderMarkdownToHtml(rep.common_requirements) + '</div>';
+            }
+            if (rep.what_i_lack) {
+                html += '<h4>我不满足的（系统性薄弱点）</h4><div class="commonality-text commonality-md">' + renderMarkdownToHtml(rep.what_i_lack) + '</div>';
+            }
+            if (rep.priority_gaps && rep.priority_gaps.length) {
+                html += '<h4>优先解决的差距（按频率）</h4><ul class="commonality-priority-list">';
+                rep.priority_gaps.forEach(function(g) {
+                    html += '<li><strong>' + escHtmlText(g.topic || '') + '</strong> ';
+                    html += '<span class="commonality-kw">' + escHtmlText(g.injury_type || '') + '</span> ';
+                    html += '<span class="commonality-md-inline">' + renderMarkdownInline((g.frequency_note || '') + (g.one_line ? (' — ' + g.one_line) : '')) + '</span></li>';
+                });
+                html += '</ul>';
+            }
+            if (rep.resume_optimizations && rep.resume_optimizations.length) {
+                html += '<h4>简历最该优化的方向</h4><ul class="commonality-actions-list">';
+                rep.resume_optimizations.forEach(function(o) {
+                    html += '<li><span class="module">' + escHtmlText(o.module || '') + '</span> ';
+                    (o.keywords_to_add || []).forEach(function(k) {
+                        html += '<span class="commonality-kw">' + escHtmlText(k) + '</span>';
+                    });
+                    html += '<div class="commonality-md commonality-md--nested">' + renderMarkdownToHtml(o.detail || '') + '</div></li>';
+                });
+                html += '</ul>';
+            }
+            if (rep._parse_error) {
+                html += '<p class="commonality-meta" style="display:block;color:var(--text-muted)">（模型返回未能解析为 JSON，上方为原文）</p>';
+            }
+            return html || '<p class="match-empty">无内容</p>';
+        }
+
+        document.getElementById('btnCommonalityReport').addEventListener('click', async function() {
+            const resumePath = document.getElementById('matchResumeSelect').value;
+            if (!resumePath) { alert('请先选择简历'); return; }
+            const modelId = document.getElementById('match_model').value || 'deepseek_chat';
+            const trackParams = getMatchTrackParams();
+            const commonalityBody = { resume_path: resumePath, model_id: modelId, top_n: 10, track_params: trackParams };
+            const cachedUrl = '/api/match/commonality_report/cached?resume_path=' + encodeURIComponent(resumePath)
+                + '&track_params=' + encodeURIComponent(JSON.stringify(trackParams));
+            const loading = document.getElementById('commonalityLoading');
+            const errEl = document.getElementById('commonalityError');
+            const metaEl = document.getElementById('commonalityMeta');
+            const reportEl = document.getElementById('commonalityReport');
+            errEl.style.display = 'none';
+            errEl.textContent = '';
+            loading.style.display = 'inline';
+            this.disabled = true;
+            try {
+                let data = null;
+                let fromCache = false;
+
+                function parseErr(res, body) {
+                    const d = body.detail;
+                    return typeof d === 'string' ? d : (Array.isArray(d) ? d.map(function(x) { return x.msg || x; }).join(', ') : JSON.stringify(d));
+                }
+
+                if (window.commonalityReportState === 'cache' || window.commonalityReportState === 'fresh') {
+                    const res = await fetch('/api/match/commonality_report', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(commonalityBody)
+                    });
+                    data = await res.json();
+                    if (!res.ok) throw new Error(parseErr(res, data) || '请求失败');
+                    window.commonalityReportState = 'fresh';
+                } else {
+                    const resCached = await fetch(cachedUrl);
+                    if (resCached.ok) {
+                        const j = await resCached.json();
+                        if (j && j.ok) {
+                            data = j;
+                            window.commonalityReportState = 'cache';
+                            fromCache = true;
+                        }
+                    }
+                    if (!data) {
+                        const res = await fetch('/api/match/commonality_report', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(commonalityBody)
+                        });
+                        data = await res.json();
+                        if (!res.ok) throw new Error(parseErr(res, data) || '请求失败');
+                        window.commonalityReportState = 'fresh';
+                    }
+                }
+
+                metaEl.style.display = 'block';
+                const ti = data.token_info || {};
+                let meta = '基于 ' + (data.job_count || 0) + ' 条深度匹配岗位；Token 输入 ' + (ti.prompt_tokens || 0) + ', 输出 ' + (ti.completion_tokens || 0) + ', 合计 ' + (ti.total_tokens || 0);
+                if (fromCache) meta = '（本地缓存）' + meta;
+                metaEl.textContent = meta;
+                reportEl.innerHTML = formatCommonalityReport(data.report || {});
+                window.lastCommonalityReport = data.report || {};
+                const bmr = document.getElementById('btnMasterRewrite');
+                if (bmr) {
+                    bmr.disabled = !(window.lastCommonalityReport && Object.keys(window.lastCommonalityReport).length);
+                    bmr.title = bmr.disabled ? '请先生成共性报告' : '使用当前共性报告改写主简历（一次）';
+                }
+            } catch (e) {
+                errEl.style.display = 'block';
+                errEl.textContent = e.message || String(e);
+            } finally {
+                loading.style.display = 'none';
+                this.disabled = false;
+            }
+        });
+
+        document.getElementById('btnMasterRewrite').addEventListener('click', function() {
+            startMasterRewrite(false);
+        });
+
+        async function startMasterRewrite(forceRerun) {
+            const resumePath = document.getElementById('matchResumeSelect').value;
+            if (!resumePath) { alert('请先选择简历'); return; }
+            if (!window.lastCommonalityReport || Object.keys(window.lastCommonalityReport).length === 0) {
+                alert('请先点击「生成共性报告」');
+                return;
+            }
+            const agentStage = document.getElementById('agentStage');
+            const agentLogs = document.getElementById('agentLogs');
+            const agentResult = document.getElementById('agentResult');
+            const loadEl = document.getElementById('masterRewriteLoading');
+            if (window.workbenchGoToStep) window.workbenchGoToStep(5);
+            agentResult.innerHTML = '';
+            agentLogs.innerHTML = '';
+            if (!forceRerun) {
+                try {
+                    const cached = await fetch('/api/gap/master_result?resume_path=' + encodeURIComponent(resumePath)).then(r => r.json());
+                    if (cached.result) {
+                        agentStage.textContent = '完成（已缓存）';
+                        renderGapResult(cached.result, MASTER_JOB_ID, resumePath);
+                        return;
+                    }
+                } catch (e) { /* 继续 */ }
+            }
+            const modelId = document.getElementById('match_model').value || 'deepseek_chat';
+            try {
+                agentStage.textContent = '准备中...';
+                if (loadEl) loadEl.style.display = 'inline';
+                const res = await fetch('/api/gap/master_rewrite', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        resume_path: resumePath,
+                        model_id: modelId,
+                        commonality_report: window.lastCommonalityReport
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    const d = data.detail;
+                    const msg = typeof d === 'string' ? d : JSON.stringify(d);
+                    throw new Error(msg || '启动失败');
+                }
+                const taskId = data.task_id;
+                const poll = setInterval(async () => {
+                    const st = await fetch('/api/task/' + taskId + '/status').then(r => r.json());
+                    agentStage.textContent = (st.result && st.result.current_stage) || (st.status === 'running' ? '运行中...' : st.status);
+                    agentLogs.innerHTML = (st.logs || []).map(l => `<div class="log-entry ${l.level || 'INFO'}">${l.message || ''}</div>`).join('');
+                    agentLogs.scrollTop = agentLogs.scrollHeight;
+                    if (st.status === 'completed' || st.status === 'failed') {
+                        clearInterval(poll);
+                        if (loadEl) loadEl.style.display = 'none';
+                        if (st.status === 'completed') {
+                            agentStage.textContent = '完成';
+                            try {
+                                const r = await fetch('/api/gap/master_result?resume_path=' + encodeURIComponent(resumePath)).then(x => x.json());
+                                if (r && r.result) {
+                                    renderGapResult(r.result, MASTER_JOB_ID, resumePath);
+                                } else {
+                                    agentResult.innerHTML = '<p class="gap-error">任务已完成但未读到结果，请稍后重试或刷新页面</p>';
+                                }
+                            } catch (err) {
+                                agentResult.innerHTML = '<p class="gap-error">加载结果失败: ' + (err.message || String(err)) + '</p>';
+                            }
+                        } else {
+                            agentStage.textContent = '失败';
+                            agentResult.innerHTML = '<p class="gap-error">主简历改写失败: ' + (st.error || '未知错误') + '</p>';
+                        }
+                    }
+                }, 1000);
+            } catch (e) {
+                if (loadEl) loadEl.style.display = 'none';
+                alert('启动主简历改写失败: ' + e.message);
+            }
+        }
+
+        const MATCH_JOB_DIRECTION_LABELS = {
+            foundation_model: '基础模型训练/微调',
+            model_infra: '模型服务/推理优化',
+            data_platform: '数据平台/标注体系',
+            agent: 'Agent/智能体',
+            rag: 'RAG/知识库',
+            c_end_ai: 'C端AI产品',
+            b_end_solution: 'B端AI解决方案',
+            aigc: 'AI内容生成',
+            ai_search_rec: 'AI搜索/推荐',
+            ai_vertical: 'AI+垂直行业'
+        };
+        function formatMatchJobDirectionTag(r) {
+            const p = (r.job_direction_primary || '').trim();
+            if (!p) return '';
+            const base = MATCH_JOB_DIRECTION_LABELS[p] || p;
+            let text = base;
+            let title = base;
+            if (p === 'ai_vertical' && (r.direction_detail || '').trim()) {
+                const d = String(r.direction_detail).trim();
+                text = d.length > 12 ? d.substring(0, 12) + '…' : d;
+                title = 'AI+垂直行业：' + d;
+            }
+            const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+            return `<span class="match-job-direction-tag" title="${esc(title)}">${esc(text)}</span>`;
+        }
+
+        function escHtmlText(s) {
+            if (s == null || s === '') return '';
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        /** UMD 下 global marked 为对象且含 parse / parseInline */
+        function getMarkedApi() {
+            if (typeof marked === 'undefined') return null;
+            const m = marked;
+            if (m && typeof m.parse === 'function') return m;
+            return null;
+        }
+
+        /** 无 marked 时：仅支持 **粗体**、`code`，避免块级标签 */
+        function renderInlineMarkdownFallback(str) {
+            let s = escHtmlText(str);
+            s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+            return s;
+        }
+
+        const _MD_PARSE_OPTS = { async: false, breaks: true, gfm: true };
+
+        /** 共性报告等字段常为 Markdown；渲染为安全 HTML */
+        function renderMarkdownToHtml(md) {
+            if (md == null || md === '') return '';
+            const str = String(md).replace(/\r\n/g, '\n').trim();
+            const api = getMarkedApi();
+            if (!api || typeof DOMPurify === 'undefined') {
+                return escHtmlText(str).replace(/\n/g, '<br>');
+            }
+            try {
+                let raw = api.parse(str, _MD_PARSE_OPTS);
+                if (raw && typeof raw.then === 'function') {
+                    console.warn('renderMarkdownToHtml: marked 返回 Promise，已降级为纯文本换行');
+                    return escHtmlText(str).replace(/\n/g, '<br>');
+                }
+                raw = String(raw);
+                return DOMPurify.sanitize(raw, {
+                    USE_PROFILES: { html: true },
+                    ADD_ATTR: ['target', 'rel'],
+                });
+            } catch (e) {
+                console.warn('renderMarkdownToHtml', e);
+                return escHtmlText(str).replace(/\n/g, '<br>');
+            }
+        }
+
+        /**
+         * 仅行内 Markdown（列表项内）。禁止回退到 marked.parse，否则会产生 &lt;p&gt;/&lt;ul&gt;
+         * 套在 span 里，DOM 非法且样式错乱。
+         */
+        function renderMarkdownInline(md) {
+            if (md == null || md === '') return '';
+            const str = String(md).replace(/\r\n/g, '\n');
+            const api = getMarkedApi();
+            if (!api || typeof DOMPurify === 'undefined') {
+                return renderInlineMarkdownFallback(str);
+            }
+            try {
+                if (typeof api.parseInline === 'function') {
+                    let raw = api.parseInline(str, _MD_PARSE_OPTS);
+                    if (raw && typeof raw.then === 'function') {
+                        return renderInlineMarkdownFallback(str);
+                    }
+                    raw = String(raw);
+                    return DOMPurify.sanitize(raw, {
+                        USE_PROFILES: { html: true },
+                        ADD_ATTR: ['target', 'rel'],
+                    });
+                }
+                return renderInlineMarkdownFallback(str);
+            } catch (e) {
+                return renderInlineMarkdownFallback(str);
+            }
+        }
+
+        function renderMatchResults(results, resumePath) {
+            const listEl = document.getElementById('matchResultsList');
+            if (!listEl) return;
+            resumePath = resumePath || currentMatchResumePath;
+            if (!results || results.length === 0) {
+                listEl.innerHTML = '<p class="match-empty">暂无匹配结果，请先运行匹配</p>';
+                return;
+            }
+            let html = '';
+            results.forEach((r, i) => {
+                const score = r.match_score;
+                const scoreClass = score >= 80 ? 'match-score-high' : (score >= 60 ? 'match-score-mid' : '');
+                const ds = r.skill_match != null ? { skill_match: r.skill_match, experience_match: r.experience_match, growth_potential: r.growth_potential, culture_fit: r.culture_fit } : (r.dimension_scores || {});
+                const strengths = r.strengths || [];
+                const gapsRaw = r.gaps || [];
+                const gaps = gapsRaw.map(function(x) { return typeof x === 'string' ? x : (x && x.description) || ''; }).filter(Boolean);
+                const matchRec = r.match_recommendation || '';
+                const matchRecClass = matchRec === '不建议投递' ? 'match-rec-no' : (matchRec === '谨慎投递' ? 'match-rec-caution' : (matchRec === '可以试但概率低' ? 'match-rec-low' : (matchRec === '投递' ? 'match-rec-yes' : '')));
+                const advice = r.advice || '';
+                const companyPart = (r.company_name || '').substring(0, 20);
+                const jobPart = (r.job_name || '').substring(0, 25);
+                const jobLink = r.job_url ? `<a href="${r.job_url}" target="_blank" rel="noopener" class="match-job-link">${jobPart}</a>` : jobPart;
+                const rank = i + 1;
+                const jobId = (r.job_id || '').replace(/"/g, '&quot;');
+                const appliedSt = normalizeAppliedStatus(r.applied);
+                const dirTag = formatMatchJobDirectionTag(r);
+                const isDeep = (r.agent_version === 'match_agent_v1') || (r.gap_analysis && typeof r.gap_analysis === 'object');
+                const deepBadge = isDeep ? '<span class="match-deep-badge" title="已做深度匹配（Match Agent）">深度</span>' : '';
+                const recTagHtml = matchRec ? `<span class="match-rec-tag ${matchRecClass}">${escHtmlText(matchRec)}</span>` : '';
+                const appliedBoxHtml = buildAppliedButtonHtml(jobId, appliedSt);
+                const recRowHtml = `<span class="match-rec-row">${recTagHtml}${appliedBoxHtml}</span>`;
+                html += `<div class="match-result-item" data-idx="${i}" data-job-id="${jobId}">
+                    <div class="match-result-header">
+                        <span class="match-result-rank">${rank}</span>
+                        <span class="match-result-title">${companyPart} · ${jobLink}${dirTag}${recRowHtml}</span>
+                        <span class="match-result-score ${scoreClass}">${score}</span>
+                        <div class="match-result-actions">
+                            <button type="button" class="match-rerun-btn" data-job-id="${jobId}" title="重新粗评 + 深度匹配，覆盖当前分数">重新匹配</button>
+                        </div>
+                    </div>
+                    <div class="match-result-dims">技能 ${ds.skill_match || '-'} | 经验 ${ds.experience_match || '-'} | 成长 ${ds.growth_potential || '-'} | 契合 ${ds.culture_fit || '-'}</div>
+                    <div class="match-result-summary">
+                        ${strengths.length ? `<div class="match-summary-line match-summary-strengths">优势: ${escHtmlText(strengths.join('；'))}</div>` : ''}
+                        <div class="match-summary-line match-summary-gaps${strengths.length ? '' : ' match-summary-gaps-only'}">差距: ${escHtmlText(gaps.join('；') || '-')}</div>
+                    </div>
+                    ${(advice && String(advice).trim()) ? `<div class="match-result-advice" style="display:none">${escHtmlText(advice)}</div>
+                    <button type="button" class="match-expand-btn">展开建议</button>` : ''}
+                    ${deepBadge}
+                </div>`;
+            });
+            listEl.innerHTML = html;
+            listEl.querySelectorAll('.match-expand-btn').forEach(btn => {
+                btn.onclick = function() {
+                    const item = this.closest('.match-result-item');
+                    const adviceEl = item.querySelector('.match-result-advice');
+                    const isHidden = adviceEl.style.display === 'none';
+                    adviceEl.style.display = isHidden ? 'block' : 'none';
+                    this.textContent = isHidden ? '收起' : '展开建议';
+                };
+            });
+            listEl.querySelectorAll('.match-rerun-btn').forEach(btn => {
+                btn.onclick = function() {
+                    const jobId = this.dataset.jobId;
+                    if (!jobId || !resumePath) { alert('请先选择简历'); return; }
+                    startMatchRerunOne(jobId, resumePath);
+                };
+            });
+        }
+
+        async function startMatchRerunOne(jobId, resumePath) {
+            if (!confirm('将重新对该岗位执行粗评与深度匹配（Match Agent），并覆盖当前分数。是否继续？')) return;
+            const modelId = document.getElementById('match_model').value || 'deepseek_chat';
+            try {
+                const res = await fetch('/api/match/rerun_one', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ job_id: jobId, resume_path: resumePath, model_id: modelId })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || '启动失败');
+                const rerunTaskId = data.task_id;
+                document.getElementById('matchProgress').style.display = 'block';
+                document.getElementById('matchTokenInfo').style.display = 'none';
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('startAnalysisBtn').disabled = true;
+                document.getElementById('startTrackLabelBtn').disabled = true;
+                document.getElementById('statusSection').classList.add('show');
+                const rerunPoll = setInterval(async () => {
+                    const st = await fetch('/api/task/' + rerunTaskId + '/status').then(r => r.json());
+                    document.getElementById('matchProgressFill').style.width = (st.progress.percentage || 0) + '%';
+                    document.getElementById('matchProgressFill').textContent = Math.round(st.progress.percentage || 0) + '%';
+                    document.getElementById('matchProgressText').textContent = (st.progress.current || 0) + '/' + (st.progress.total || 1) + '（重新匹配）';
+                    if (st.status === 'completed' || st.status === 'failed') {
+                        clearInterval(rerunPoll);
+                        document.getElementById('startBtn').disabled = false;
+                        document.getElementById('startAnalysisBtn').disabled = false;
+                        document.getElementById('startTrackLabelBtn').disabled = false;
+                        if (st.status === 'completed' && st.result) {
+                            const r = st.result;
+                            const tokenEl = document.getElementById('matchTokenInfo');
+                            if (tokenEl && (r.total_tokens || r.total_input_tokens || r.total_output_tokens)) {
+                                tokenEl.textContent = '重新匹配 Token 输入 ' + (r.total_input_tokens || 0) + ', 输出 ' + (r.total_output_tokens || 0) + ', 合计 ' + (r.total_tokens || 0);
+                                tokenEl.style.display = 'block';
+                            }
+                            if (r.resume_path) loadMatchResults(r.resume_path);
+                        } else if (st.status === 'failed') {
+                            alert('重新匹配失败: ' + (st.error || '未知错误'));
+                        }
+                    }
+                }, 1500);
+                startStatusPolling();
+            } catch (e) {
+                alert('启动重新匹配失败: ' + e.message);
+            }
+        }
+
+        async function startGapAnalysis(jobId, resumePath, forceRerun) {
+            const agentStage = document.getElementById('agentStage');
+            const agentLogs = document.getElementById('agentLogs');
+            const agentResult = document.getElementById('agentResult');
+            if (window.workbenchGoToStep) window.workbenchGoToStep(5);
+            agentResult.innerHTML = '';
+            agentLogs.innerHTML = '';
+            if (!forceRerun) {
+                try {
+                    const cached = await fetch('/api/gap/result?job_id=' + encodeURIComponent(jobId) + '&resume_path=' + encodeURIComponent(resumePath)).then(r => r.json());
+                    if (cached.result) {
+                        agentStage.textContent = '完成（已缓存）';
+                        renderGapResult(cached.result, jobId, resumePath);
+                        return;
+                    }
+                } catch (e) { /* 无缓存继续 */ }
+            }
+            const modelId = document.getElementById('match_model').value || 'deepseek_chat';
+            try {
+                agentStage.textContent = '准备中...';
+                const res = await fetch('/api/gap/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ job_id: jobId, resume_path: resumePath, model_id: modelId })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || '启动失败');
+                const taskId = data.task_id;
+                const gapPoll = setInterval(async () => {
+                    const st = await fetch('/api/task/' + taskId + '/status').then(r => r.json());
+                    agentStage.textContent = (st.result && st.result.current_stage) || (st.status === 'running' ? '运行中...' : st.status);
+                    agentLogs.innerHTML = (st.logs || []).map(l => `<div class="log-entry ${l.level || 'INFO'}">${l.message || ''}</div>`).join('');
+                    agentLogs.scrollTop = agentLogs.scrollHeight;
+                    if (st.status === 'completed' || st.status === 'failed') {
+                        clearInterval(gapPoll);
+                        if (st.status === 'completed') {
+                            agentStage.textContent = '完成';
+                            try {
+                                const r = await fetch('/api/gap/result?job_id=' + encodeURIComponent(jobId) + '&resume_path=' + encodeURIComponent(resumePath)).then(x => x.json());
+                                if (r && r.result) {
+                                    renderGapResult(r.result, jobId, resumePath);
+                                    loadMatchResults(resumePath);
+                                } else {
+                                    agentResult.innerHTML = '<p class="gap-error">任务已完成但未读到结果，请稍后重试或刷新页面</p>';
+                                }
+                            } catch (err) {
+                                agentResult.innerHTML = '<p class="gap-error">加载结果失败: ' + (err.message || String(err)) + '</p>';
+                            }
+                        } else {
+                            agentStage.textContent = '失败';
+                            agentResult.innerHTML = '<p class="gap-error">分析失败: ' + (st.error || '未知错误') + '</p>';
+                        }
+                    }
+                }, 1000);
+            } catch (e) {
+                alert('启动差距分析失败: ' + e.message);
+            }
+        }
+
+        /** 改写建议板块排序：自我评价 → 工作经历 → 项目经历 → 技能 → 教育背景；未知板块置后 */
+        function sortGapRewrites(rewrites) {
+            if (!rewrites || !rewrites.length) return [];
+            function rank(section) {
+                const raw = String(section || '');
+                const s = raw.replace(/\s+/g, '');
+                if (/工作/.test(s) && /项目/.test(s) && /[\/／、]/.test(raw)) return 50;
+                if (/自我评价|个人总结|summary/i.test(s)) return 0;
+                if (/项目/.test(s) && /(经历|经验)/.test(s)) return 2;
+                if (/工作/.test(s) && /(经历|经验)/.test(s)) return 1;
+                if (/技能|专业技能|技术栈|skills/i.test(s)) return 3;
+                if (/教育|学历|毕业|学校/i.test(s)) return 4;
+                if (/项目/.test(s)) return 2;
+                if (/工作|实习|任职|公司/.test(s)) return 1;
+                return 50;
+            }
+            return rewrites.slice().sort(function(a, b) {
+                const d = rank(a.section) - rank(b.section);
+                if (d !== 0) return d;
+                return String(a.section || '').localeCompare(String(b.section || ''), 'zh-CN');
+            });
+        }
+
+        function renderGapResult(data, jobId, resumePath) {
+            const agentResult = document.getElementById('agentResult');
+            if (!agentResult) return;
+            if (!data) {
+                agentResult.innerHTML = '<p class="gap-empty">暂无分析结果</p>';
+                return;
+            }
+            const isMaster = jobId === MASTER_JOB_ID;
+            const yv = data.years_verdict || {};
+            const gaps = data.gap_items || [];
+            const materials = data.materials || [];
+            const rewrites = data.rewrites || [];
+            const isHard = data.is_years_hard_injury;
+            const rec = data.recommendation || '';
+            const recMsg = data.recommendation_msg || '';
+
+            let html = '<div class="gap-result">';
+            if (rec) {
+                const recClass = rec === '不建议投递' ? 'gap-rec-no' : (rec === '谨慎投递' ? 'gap-rec-caution' : (rec === '可以试但概率低' ? 'gap-rec-low' : 'gap-rec-yes'));
+                const jid = (jobId || '').replace(/"/g, '&quot;');
+                const rpath = (resumePath || '').replace(/"/g, '&quot;');
+                html += `<div class="gap-recommendation ${recClass}">`;
+                if (isMaster) {
+                    html += '<div class="gap-rec-main"><strong>主简历整体预期：' + escHtmlText(rec) + '</strong>';
+                    html += '<button type="button" class="gap-rerun-btn" data-master-rerun="1" title="需已生成共性报告">重新评估</button>';
+                } else {
+                    html += '<div class="gap-rec-main"><strong>投递建议：' + escHtmlText(rec) + '</strong>';
+                    if (jid && rpath) html += `<button type="button" class="gap-rerun-btn" data-job-id="${jid}" data-resume-path="${rpath}" title="重新跑一遍差距分析并覆盖原结果">重新评估</button>`;
+                }
+                html += '</div>';
+                if (recMsg) html += `<p class="gap-rec-msg">${escHtmlText(recMsg)}</p>`;
+                html += '</div>';
+            }
+            if (!isMaster) {
+                html += '<h4>年限判定</h4><div class="gap-years">';
+                html += `JD 要求: ${yv.jd_min_years ?? '-'}-${yv.jd_max_years ?? '-'} 年 | 简历: ${yv.resume_years ?? '-'} 年 | ${yv.is_hard_injury ? '硬伤' : '可包装'}`;
+                if (yv.reason) html += `<p class="gap-reason">${escHtmlText(yv.reason)}</p>`;
+                html += '</div>';
+            }
+
+            html += '<h4>' + (isMaster ? '优先差距（共性归纳）' : '差距项') + '</h4><ul class="gap-list">';
+            gaps.forEach(g => {
+                html += `<li><span class="gap-type ${g.type === '硬伤' ? 'hard' : 'pack'}">${escHtmlText(g.type)}</span> ${escHtmlText(g.dimension || '')}: ${escHtmlText(g.description || '')}</li>`;
+            });
+            html += '</ul>';
+
+            if (materials.length) {
+                html += '<h4>' + (isMaster ? '共性优化方向（关键词）' : '可用素材') + '</h4><ul class="gap-materials">';
+                materials.forEach(m => {
+                    if (m.module) {
+                        const kws = (m.keywords || []).map(k => escHtmlText(k)).join('、');
+                        html += '<li><strong>' + escHtmlText(m.module) + '</strong>';
+                        if (kws) html += ' · ' + kws;
+                        html += '<div class="gap-note">' + escHtmlText(m.detail || '') + '</div></li>';
+                    } else {
+                        const c = (m.content || '');
+                        html += `<li><strong>${escHtmlText(m.section || '')}</strong>: ${escHtmlText(c.length > 150 ? c.substring(0, 150) + '…' : c)} ${m.usable_for ? '(' + escHtmlText(m.usable_for) + ')' : ''}</li>`;
+                    }
+                });
+                html += '</ul>';
+            }
+
+            if (isHard) {
+                html += '<p class="gap-hard-note">年限硬伤，不生成改写建议。</p>';
+            } else if (rewrites.length) {
+                html += '<h4>' + (isMaster ? '主简历改写建议' : '改写建议') + '</h4><div class="gap-rewrites">';
+                sortGapRewrites(rewrites).forEach(function(r) {
+                    const src = (r.source === '合理延伸' || r.source === '合理扩充') ? '合理延伸' : (r.source || '原文改写');
+                    html += `<div class="gap-rewrite-item"><strong>${escHtmlText(r.section || '')}</strong>`;
+                    html += `<span class="gap-rewrite-source gap-source-${src === '合理延伸' ? 'extend' : 'rewrite'}">${escHtmlText(src)}</span>`;
+                    html += `<div class="gap-rewritten">${escHtmlText(r.rewritten || '')}</div>`;
+                    html += '</div>';
+                });
+                html += '</div>';
+            }
+
+            html += '</div>';
+            agentResult.innerHTML = html;
+        }
+
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('.gap-rerun-btn');
+            if (!btn) return;
+            if (btn.dataset.masterRerun === '1') {
+                startMasterRewrite(true);
+                return;
+            }
+            const jobId = btn.dataset.jobId;
+            const resumePath = btn.dataset.resumePath;
+            if (jobId && resumePath) startGapAnalysis(jobId, resumePath, true);
+        });
+
+        document.getElementById('btnStartMatch').addEventListener('click', async () => {
+            const resumePath = document.getElementById('matchResumeSelect').value;
+            if (!resumePath) { alert('请先选择简历'); return; }
+            const trackParams = getMatchTrackParams();
+            const salaryMin = document.getElementById('matchSalaryMin').value;
+            const salaryMax = document.getElementById('matchSalaryMax').value;
+            const citiesStr = document.getElementById('matchCities').value || '';
+            const cities = citiesStr.split(/[,，]/).map(s => s.trim()).filter(Boolean);
+            const blacklist = Array.from(document.querySelectorAll('input[name="match_blacklist"]:checked')).map(c => c.value);
+            const hardFilterOverrides = {};
+            if (salaryMin !== '') hardFilterOverrides.target_salary_min = parseInt(salaryMin, 10);
+            if (salaryMax !== '') hardFilterOverrides.target_salary_max = parseInt(salaryMax, 10);
+            if (cities.length) hardFilterOverrides.target_cities = cities;
+            if (blacklist.length) hardFilterOverrides.company_type_blacklist = blacklist;
+            const modelId = document.getElementById('match_model').value || '';
+            try {
+                const res = await fetch('/api/match/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ resume_path: resumePath, track_params: trackParams, hard_filter_overrides: hardFilterOverrides, model_id: modelId })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || '启动失败');
+                currentTaskId = data.task_id;
+                document.getElementById('matchProgress').style.display = 'block';
+                document.getElementById('matchTokenInfo').style.display = 'none';
+                document.getElementById('matchTokenInfo').textContent = '';
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('startAnalysisBtn').disabled = true;
+                document.getElementById('startTrackLabelBtn').disabled = true;
+                document.getElementById('statusSection').classList.add('show');
+                const matchTaskId = data.task_id;
+                const matchPoll = setInterval(async () => {
+                    const st = await fetch('/api/task/' + matchTaskId + '/status').then(r => r.json());
+                    document.getElementById('matchProgressFill').style.width = (st.progress.percentage || 0) + '%';
+                    document.getElementById('matchProgressFill').textContent = Math.round(st.progress.percentage || 0) + '%';
+                    document.getElementById('matchProgressText').textContent = st.progress.current + '/' + st.progress.total;
+                    if (st.status === 'completed' || st.status === 'failed') {
+                        clearInterval(matchPoll);
+                        document.getElementById('startBtn').disabled = false;
+                        document.getElementById('startAnalysisBtn').disabled = false;
+                        document.getElementById('startTrackLabelBtn').disabled = false;
+                        if (st.status === 'completed' && st.result) {
+                            const r = st.result;
+                            const tokenEl = document.getElementById('matchTokenInfo');
+                            if (tokenEl && (r.total_tokens || r.total_input_tokens || r.total_output_tokens)) {
+                                tokenEl.textContent = `Token 输入 ${r.total_input_tokens || 0}, 输出 ${r.total_output_tokens || 0}, 合计 ${r.total_tokens || 0}`;
+                                tokenEl.style.display = 'block';
+                            }
+                            if (r.resume_path) loadMatchResults(r.resume_path);
+                        }
+                    }
+                }, 1500);
+                startStatusPolling();
+            } catch (e) {
+                alert('启动匹配失败: ' + e.message);
+            }
+        });
+
+        document.getElementById('preferenceModalClose').addEventListener('click', hidePreferenceModal);
+        document.getElementById('preferenceSkipBtn').addEventListener('click', hidePreferenceModal);
+        document.getElementById('preferenceModal').addEventListener('click', (e) => {
+            if (e.target.id === 'preferenceModal') hidePreferenceModal();
+        });
+        document.getElementById('preferenceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const savedPath = document.getElementById('preferenceSavedPath').value;
+            if (!savedPath) return;
+            const targetCities = Array.from(document.querySelectorAll('input[name="pref_city"]:checked')).map(c => c.value);
+            const companyTypePref = Array.from(document.querySelectorAll('input[name="pref_company_type"]:checked')).map(c => c.value);
+            const companyBlacklist = Array.from(document.querySelectorAll('input[name="pref_company_blacklist"]:checked')).map(c => c.value);
+            const trackPref = Array.from(document.querySelectorAll('input[name="pref_track"]:checked')).map(c => c.value);
+            const dealbreakersStr = document.getElementById('dealbreakers').value || '';
+            const dealbreakers = dealbreakersStr.split(/[,，]/).map(s => s.trim()).filter(Boolean);
+            const preferences = {
+                target_salary_min: parseInt(document.getElementById('targetSalaryMin').value, 10) || 0,
+                target_salary_max: parseInt(document.getElementById('targetSalaryMax').value, 10) || 0,
+                target_cities: targetCities,
+                company_type_preference: companyTypePref,
+                company_type_blacklist: companyBlacklist,
+                track_preference: trackPref,
+                dealbreakers: dealbreakers,
+                other_notes: (document.getElementById('otherNotes').value || '').trim()
+            };
+            const btn = document.getElementById('preferenceSubmitBtn');
+            btn.disabled = true;
+            try {
+                const res = await fetch('/api/resume/preferences', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ saved_path: savedPath, preferences: preferences })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || '保存失败');
+                alert('偏好已保存并合并到简历文件');
+                hidePreferenceModal();
+            } catch (err) {
+                alert('保存偏好失败: ' + err.message);
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('trackLabelForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const modelId = document.getElementById('track_label_model').value || '';
+                const response = await fetch('/api/track-label/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model_id: modelId, only_unlabeled: true })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    currentTaskId = data.task_id;
+                    document.getElementById('startBtn').disabled = true;
+                    document.getElementById('startAnalysisBtn').disabled = true;
+                    document.getElementById('startTrackLabelBtn').disabled = true;
+                    document.getElementById('statusSection').classList.add('show');
+                    startStatusPolling();
+                } else {
+                    alert('启动赛道标注失败: ' + data.detail);
+                }
+            } catch (error) {
+                alert('请求失败: ' + error.message);
+            }
+        });
+        
+        
+        let lastTrackFilterParams = null;
+        let lastTrackFilterJobs = [];
+        let jobDirectionLabels = {};
+        let selectedSourceKeyword = null;  // 点击关键词标签时选中的搜索关键词
+        
+        function getTrackFilterParams() {
+            const companyTypes = Array.from(document.querySelectorAll('input[name="track_company_type"]:checked')).map(c => c.value);
+            const jobNatures = Array.from(document.querySelectorAll('input[name="track_job_nature"]:checked')).map(c => c.value);
+            const jobDirectionPrimaries = Array.from(document.querySelectorAll('input[name="track_job_direction"]:checked')).map(c => c.value);
+            const minConfidence = document.getElementById('trackFilterConfidence').value || '';
+            const sourceKeywords = selectedSourceKeyword ? [selectedSourceKeyword] : [];
+            return {
+                company_types: companyTypes,
+                job_natures: jobNatures,
+                job_direction_primaries: jobDirectionPrimaries,
+                min_confidence: minConfidence,
+                source_keywords: sourceKeywords
+            };
+        }
+
+        /** 匹配评分专用：优先使用「开始匹配」旁关键词下拉，否则与赛道快捷标签一致 */
+        function getMatchTrackParams() {
+            const companyTypes = Array.from(document.querySelectorAll('input[name="track_company_type"]:checked')).map(c => c.value);
+            const jobNatures = Array.from(document.querySelectorAll('input[name="track_job_nature"]:checked')).map(c => c.value);
+            const jobDirectionPrimaries = Array.from(document.querySelectorAll('input[name="track_job_direction"]:checked')).map(c => c.value);
+            const minConfidence = document.getElementById('trackFilterConfidence').value || '';
+            const matchKwSel = document.getElementById('matchSourceKeywordSelect');
+            let sourceKeywords = [];
+            if (matchKwSel && matchKwSel.value) {
+                sourceKeywords = [matchKwSel.value];
+            } else if (selectedSourceKeyword) {
+                sourceKeywords = [selectedSourceKeyword];
+            }
+            return {
+                company_types: companyTypes,
+                job_natures: jobNatures,
+                job_direction_primaries: jobDirectionPrimaries,
+                min_confidence: minConfidence,
+                source_keywords: sourceKeywords
+            };
+        }
+        
+        document.addEventListener('click', (e) => {
+            const tag = e.target.closest('.keyword-tag');
+            if (!tag) return;
+            e.preventDefault();
+            const kw = tag.dataset.keyword;
+            if (!kw) return;
+            selectedSourceKeyword = selectedSourceKeyword === kw ? null : kw;
+            document.querySelectorAll('.keyword-tag').forEach(t => t.classList.remove('active'));
+            if (selectedSourceKeyword) tag.classList.add('active');
+            document.getElementById('btnGenerateFilter').click();
+            const rpKw = document.getElementById('matchResumeSelect') && document.getElementById('matchResumeSelect').value;
+            if (rpKw) setTimeout(function() { loadMatchResults(rpKw); }, 0);
+        });
+        
+        document.getElementById('btnGenerateFilter').addEventListener('click', async () => {
+            const params = getTrackFilterParams();
+            try {
+                const response = await fetch('/api/jobs/by-track', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(params)
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.detail || '请求失败');
+                lastTrackFilterParams = params;
+                lastTrackFilterJobs = data.jobs || [];
+                document.getElementById('trackFilterSummary').textContent = `共 ${data.total} 条岗位`;
+                document.getElementById('btnExportExcel').disabled = data.total === 0;
+                const wrap = document.getElementById('trackFilterTableWrap');
+                if (!data.jobs || data.jobs.length === 0) {
+                    wrap.innerHTML = '<p class="track-filter-empty">暂无符合条件的数据</p>';
+                } else {
+                    let table = '<table class="track-filter-table"><thead><tr><th>公司名称</th><th>公司属性</th><th>岗位实质</th><th>岗位方向</th><th>置信度</th><th>薪资</th><th>链接</th></tr></thead><tbody>';
+                    data.jobs.forEach(job => {
+                        const link = job.job_url ? `<a href="${job.job_url}" target="_blank" rel="noopener">查看</a>` : '-';
+                        const dirPrimary = job.job_direction_primary ? (jobDirectionLabels[job.job_direction_primary] || job.job_direction_primary) : '-';
+                        table += `<tr><td>${(job.company_name || '').substring(0,15)}</td><td>${job.company_type || '-'}</td><td>${job.job_nature || '-'}</td><td>${dirPrimary}</td><td>${job.track_confidence || '-'}</td><td>${job.salary_desc || '-'}</td><td>${link}</td></tr>`;
+                    });
+                    table += '</tbody></table>';
+                    wrap.innerHTML = table;
+                }
+            } catch (error) {
+                alert('筛选失败: ' + error.message);
+            }
+        });
+        
+        async function downloadExport(format) {
+            if (!lastTrackFilterParams) {
+                alert('请先点击「生成筛选结果」');
+                return;
+            }
+            try {
+                const url = `/api/jobs/export?format=${format}`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(lastTrackFilterParams)
+                });
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    throw new Error(err.detail || response.statusText);
+                }
+                const blob = await response.blob();
+                const s = new Date().toISOString().slice(0,19).replace(/[-:T]/g, '');
+                const ts = s.slice(0,8) + '_' + s.slice(8,14);
+                const filename = format === 'json' ? `jobs_filtered_${ts}.json` : `jobs_filtered_${ts}.xlsx`;
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(a.href);
+            } catch (error) {
+                alert('导出失败: ' + error.message);
+            }
+        }
+        
+        document.getElementById('btnExportExcel').addEventListener('click', () => downloadExport('xlsx'));
+        
+        function startStatusPolling() {
+            if (statusCheckInterval) clearInterval(statusCheckInterval);
+            statusCheckInterval = setInterval(async () => {
+                if (!currentTaskId) return;
+                try {
+                    const response = await fetch(`/api/task/${currentTaskId}/status`);
+                    const data = await response.json();
+                    updateStatus(data);
+                    if (data.status === 'completed' || data.status === 'failed' || data.status === 'cancelled') {
+                        clearInterval(statusCheckInterval);
+                        document.getElementById('startBtn').disabled = false;
+                        document.getElementById('startAnalysisBtn').disabled = false;
+                        const trackLabelBtn = document.getElementById('startTrackLabelBtn');
+                        if (trackLabelBtn) trackLabelBtn.disabled = false;
+                        if (data.status === 'completed') {
+                            if (data.result.output_file) {
+                                document.getElementById('excel_path').value = data.result.output_file;
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('获取状态失败:', error);
+                }
+            }, 2000);
+        }
+        
+        function updateStatus(data) {
+            const statusBadge = document.getElementById('statusBadge');
+            statusBadge.textContent = getStatusText(data.status);
+            statusBadge.className = 'status-badge ' + data.status;
+            
+            const estimatedTimeEl = document.getElementById('estimatedTime');
+            if (data.estimated_range && (data.status === 'running' || data.status === 'waiting_confirm')) {
+                estimatedTimeEl.textContent = data.estimated_range;
+                estimatedTimeEl.style.display = 'inline';
+            } else {
+                estimatedTimeEl.textContent = '';
+                estimatedTimeEl.style.display = 'none';
+            }
+            
+            const confirmSection = document.getElementById('confirmSection');
+            const confirmMessage = document.getElementById('confirmMessage');
+            const confirmBtn = document.getElementById('confirmBtn');
+            
+                if (data.status === 'waiting_confirm' && data.waiting_message) {
+                confirmSection.classList.add('show');
+                confirmMessage.textContent = data.waiting_message;
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = '<span class="btn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></span>我已登录，继续执行';
+                confirmBtn.style.opacity = '1';
+                confirmBtn.style.cursor = 'pointer';
+                confirmSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                confirmSection.classList.remove('show');
+            }
+            
+            const progress = data.progress;
+            const percentage = progress.percentage || 0;
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = percentage + '%';
+            progressFill.textContent = percentage.toFixed(1) + '%';
+            
+            document.getElementById('progressText').textContent = `${progress.current} / ${progress.total} (${percentage.toFixed(1)}%)`;
+            
+            const logsContainer = document.getElementById('logsContainer');
+            logsContainer.innerHTML = '';
+            data.logs.forEach(log => {
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry ' + log.level;
+                logEntry.textContent = `[${log.timestamp.split('T')[1].split('.')[0]}] ${log.message}`;
+                logsContainer.appendChild(logEntry);
+            });
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+            
+            if (data.result.output_file || data.result.total_labeled !== undefined || data.result.resume_path) {
+                const resultSection = document.getElementById('resultSection');
+                const resultContent = document.getElementById('resultContent');
+                resultSection.classList.add('show');
+                let resultHtml = '';
+                if (data.result.output_file) {
+                    resultHtml += `<p><strong>结果文件:</strong> <a href="/api/file/${encodeURIComponent(data.result.output_file)}" class="result-link" target="_blank">${data.result.output_file}</a></p>
+                    <p><strong>成功:</strong> ${data.result.success_count} | <strong>失败:</strong> ${data.result.failed_count}</p>`;
+                }
+                if (data.result.total_labeled !== undefined) {
+                    resultHtml += `<p><strong>赛道标注:</strong> 已标注 ${data.result.total_labeled} 条，失败 ${data.result.failed_count || 0} 条</p>`;
+                }
+                if (data.result.resume_path) {
+                    resultHtml += `<p><strong>匹配评分:</strong> 成功 ${data.result.success_count || 0} 条，失败 ${data.result.failed_count || 0} 条</p>`;
+                }
+                if (data.result.total_tokens) {
+                    resultHtml += `<p><strong>Token 统计:</strong> 输入 ${data.result.total_input_tokens || 0}, 输出 ${data.result.total_output_tokens || 0}, 合计 ${data.result.total_tokens}</p>`;
+                }
+                if (resultHtml) resultContent.innerHTML = resultHtml;
+            }
+            
+            if (data.error) {
+                const errorEntry = document.createElement('div');
+                errorEntry.className = 'log-entry ERROR';
+                errorEntry.textContent = `[错误] ${data.error}`;
+                logsContainer.appendChild(errorEntry);
+            }
+        }
+        
+        function getStatusText(status) {
+            const statusMap = {
+                'idle': '空闲',
+                'running': '运行中',
+                'waiting_confirm': '等待确认',
+                'completed': '完成',
+                'failed': '失败',
+                'cancelled': '已取消'
+            };
+            return statusMap[status] || status;
+        }
+        
+        document.getElementById('confirmBtn').addEventListener('click', async () => {
+            if (!currentTaskId) {
+                alert('没有活动任务');
+                return;
+            }
+            const confirmBtn = document.getElementById('confirmBtn');
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = '确认中...';
+            confirmBtn.style.opacity = '0.6';
+            confirmBtn.style.cursor = 'not-allowed';
+            try {
+                const response = await fetch(`/api/task/${currentTaskId}/confirm`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    alert('确认失败: ' + (data.detail || '未知错误'));
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = '<span class="btn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></span>我已登录，继续执行';
+                    confirmBtn.style.opacity = '1';
+                    confirmBtn.style.cursor = 'pointer';
+                }
+            } catch (error) {
+                console.error('确认请求失败:', error);
+                alert('请求失败: ' + error.message);
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = '✅ 我已登录，继续执行';
+                confirmBtn.style.opacity = '1';
+                confirmBtn.style.cursor = 'pointer';
+            }
+        });
+    </script>
+</body>
+</html>
