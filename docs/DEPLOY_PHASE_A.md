@@ -25,7 +25,8 @@ docker run --rm -p 8001:8001 --env-file .env navi-web
 
 1. 把本仓库推到 GitHub（或平台支持的 Git 源）。
 2. 在平台选择 **Dockerfile 部署**，根目录即 `Dockerfile` 所在目录。
-3. 在平台控制台配置与本地 `.env` 相同的密钥（DeepSeek / Supermind 等），**切勿**把 `.env` 提交进 Git。
+3. 在平台控制台配置与本地 `.env` 相同的密钥（DeepSeek / Supermind 等），**切勿**把 `.env` 提交进 Git。  
+   - **分析 / 匹配 / 标注等 LLM 功能**依赖这些变量；未配置时进程仍可启动（页面能打开），但点相关功能会提示未配置。Render 上若曾出现 **Exited with status 1**，多为旧版在导入时因无密钥直接崩溃，已改为可空配置启动。
 4. 平台会为应用分配 **https://你的子域名.xxx.app** 一类地址，即阶段 A 的 HTTPS。
 
 ### Railway / Render / Fly.io

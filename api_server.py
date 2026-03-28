@@ -92,13 +92,19 @@ def get_available_models() -> List[Dict[str, str]]:
     return models
 
 
-# 默认客户端（使用第一个已配置的模型）
+# 默认客户端（使用第一个已配置的模型）。无配置时不抛错，便于 Docker/云上先启动进程（用到 LLM 时再报错）。
 _available = get_available_models()
 if not _available:
-    raise ValueError("请在 .env 中至少配置 Supermind 或 DeepSeek 的 API_KEY、BASE_URL、MODEL")
-_default_model_id = _available[0]["id"]
-_default_cfg = _get_model_config(_default_model_id)
-client = OpenAI(api_key=_default_cfg[0], base_url=_default_cfg[1], timeout=120)
+    logger.warning(
+        "未配置任何 LLM（需 DEEPSEEK_API_KEY + DEEPSEEK_BASE_URL，或 Supermind 的 KEY/BASE_URL/MODEL）；"
+        "服务可启动，分析/匹配等依赖模型的功能将不可用。"
+    )
+    _default_model_id = None
+    client = None
+else:
+    _default_model_id = _available[0]["id"]
+    _default_cfg = _get_model_config(_default_model_id)
+    client = OpenAI(api_key=_default_cfg[0], base_url=_default_cfg[1], timeout=120)
 
 
 class AnalysisRequest(BaseModel):
@@ -368,6 +374,10 @@ def call_llm_analyze(job_desc: str, aggressive_repair: bool = False, model_id: O
 
     # 根据 model_id 选择客户端
     mid = model_id or _default_model_id
+    if not mid:
+        raise ValueError(
+            "未配置 LLM：请在环境变量中设置 DEEPSEEK_API_KEY 与 DEEPSEEK_BASE_URL（或 Supermind 的 SUPER_MIND_*）。"
+        )
     api_key, base_url, model_name = _get_model_config(mid)
     _client = OpenAI(api_key=api_key, base_url=base_url, timeout=120)
 
