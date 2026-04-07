@@ -1076,6 +1076,25 @@ def get_matched_job_ids(resume_path: str) -> set:
     return {r[0] for r in rows}
 
 
+def get_job_ids_with_applied_match_decision() -> set:
+    """
+    任意简历下已在匹配结果中标记「已投」(1) 或「不投」(2) 的岗位 job_id。
+    换用新简历做批量匹配时跳过这些岗位，避免重复消耗 Token。
+    （applied=0 表示未标记，仍参与匹配。）
+    """
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT DISTINCT job_id FROM match_results
+        WHERE applied IN (1, 2)
+        """
+    )
+    rows = cur.fetchall()
+    conn.close()
+    return {r[0] for r in rows}
+
+
 def get_match_results_by_resume(resume_path: str, limit: int = 500) -> List[Dict]:
     """按 resume_path 获取匹配结果，按 match_score 降序；含 has_agent_analysis 标记"""
     conn = get_conn()
@@ -1247,6 +1266,7 @@ __all__ = [
     "get_top_deep_matches_for_commonality",
     "COMMONALITY_MIN_JOBS",
     "get_matched_job_ids",
+    "get_job_ids_with_applied_match_decision",
     "get_match_result_row",
     "get_job_by_id",
     "get_job_detail_cache_for_ids",

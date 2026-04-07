@@ -11,6 +11,7 @@ from db import (
     get_job_by_id,
     save_match_result,
     get_matched_job_ids,
+    get_job_ids_with_applied_match_decision,
     get_match_deep_scan_stats,
     get_match_rows_needing_deep_backfill,
 )
@@ -285,14 +286,26 @@ def run_match_task(
             "INFO",
         )
 
-        # 排除已匹配过的岗位，只对新岗位调用 LLM（节省 token）
+        # 排除：① 当前简历已匹配过的岗位 ② 任意简历下已标记已投/不投的岗位（换简历时不再扫）
         already_matched_ids = get_matched_job_ids(resume_path)
-        to_score = [j for j in filtered if j.get("job_id") not in already_matched_ids]
+        applied_decision_ids = get_job_ids_with_applied_match_decision()
+        skip_ids = already_matched_ids | applied_decision_ids
+        to_score = [j for j in filtered if j.get("job_id") not in skip_ids]
         skipped = len(filtered) - len(to_score)
+        n_skip_matched = sum(1 for j in filtered if j.get("job_id") in already_matched_ids)
+        n_skip_applied_only = sum(
+            1
+            for j in filtered
+            if j.get("job_id") in applied_decision_ids
+            and j.get("job_id") not in already_matched_ids
+        )
         if skipped > 0:
             task_manager.add_log(
                 task_id,
-                f"跳过已匹配 {skipped} 条，待评分 {len(to_score)} 条",
+                (
+                    f"跳过 {skipped} 条（本简历已匹配 {n_skip_matched}；"
+                    f"他简历已标已投/不投 {n_skip_applied_only}），待评分 {len(to_score)} 条"
+                ),
                 "INFO",
             )
         task_manager.update_progress(task_id, 0, max(len(to_score), 1))
