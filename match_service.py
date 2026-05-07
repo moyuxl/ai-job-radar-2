@@ -181,11 +181,14 @@ def _apply_one_match_from_coarse_result(
                 agent_version=MATCH_AGENT_VERSION,
                 coarse_score=coarse,
             )
-        except Exception:
+        except Exception as e:
             logger.exception("深度匹配失败，已回退为粗评")
+            err_hint = str(e).replace("\r", " ").replace("\n", " ").strip()
+            if len(err_hint) > 400:
+                err_hint = err_hint[:397] + "..."
             task_manager.add_log(
                 task_id,
-                f"深度匹配失败 job={jid}，已保存粗评",
+                f"深度匹配失败 job={jid}，已保存粗评：{err_hint or type(e).__name__}",
                 "WARNING",
             )
             save_match_result(

@@ -386,6 +386,14 @@
             </div>
             <div class="match-results" id="matchResults">
                 <h3>匹配结果</h3>
+                <div class="match-results-toolbar" id="matchResultsToolbar" role="group" aria-label="列表显示筛选">
+                    <span class="match-results-toolbar-title">列表筛选</span>
+                    <label class="match-filter-check"><input type="checkbox" id="matchDisplayHideMarked"> 隐藏已标记（已投 / 不投）</label>
+                    <span class="match-toolbar-sep" aria-hidden="true"></span>
+                    <label class="match-filter-check"><input type="checkbox" id="matchDisplayHideLowScore"> 隐藏低于</label>
+                    <input type="number" id="matchDisplayLowCutoff" class="match-low-cutoff-input" min="0" max="100" value="60" title="综合分低于该值的岗位在勾选「隐藏低于」时不显示" aria-label="低分阈值">
+                    <span class="match-filter-low-unit">分</span>
+                </div>
                 <p id="matchResultsScopeHint" class="match-results-scope-hint" style="display:none" role="status"></p>
                 <div id="matchResultsList" class="match-results-list"></div>
             </div>
@@ -1213,6 +1221,106 @@
         /** null | 'cache' 上次展示来自本地文件 | 'fresh' 上次为本次会话内 LLM 新生成 */
         window.commonalityReportState = null;
 
+        /** 列表展示筛选（localStorage 持久化） */
+        const LS_MATCH_HIDE_MARKED = 'aijr_match_display_hide_marked';
+        const LS_MATCH_HIDE_LOW = 'aijr_match_display_hide_low';
+        const LS_MATCH_LOW_CUTOFF = 'aijr_match_display_low_cutoff';
+
+        function readMatchDisplayFilterPrefs() {
+            const hm = document.getElementById('matchDisplayHideMarked');
+            const hl = document.getElementById('matchDisplayHideLowScore');
+            const co = document.getElementById('matchDisplayLowCutoff');
+            let lowCutoff = co ? parseInt(String(co.value).trim(), 10) : 60;
+            if (!Number.isFinite(lowCutoff)) lowCutoff = 60;
+            lowCutoff = Math.max(0, Math.min(100, lowCutoff));
+            return {
+                hideMarked: !!(hm && hm.checked),
+                hideLow: !!(hl && hl.checked),
+                lowCutoff,
+            };
+        }
+
+        function applyMatchDisplayFilters(rows) {
+            const { hideMarked, hideLow, lowCutoff } = readMatchDisplayFilterPrefs();
+            return (rows || []).filter(function(r) {
+                if (hideMarked) {
+                    const st = normalizeAppliedStatus(r.applied);
+                    if (st === 1 || st === 2) return false;
+                }
+                if (hideLow) {
+                    const sc = Number(r.match_score);
+                    if (!Number.isFinite(sc) || sc < lowCutoff) return false;
+                }
+                return true;
+            });
+        }
+
+        function refreshMatchResultsDisplay(resumePath) {
+            const listEl = document.getElementById('matchResultsList');
+            const hintEl = document.getElementById('matchResultsScopeHint');
+            if (!listEl) return;
+            resumePath = resumePath || currentMatchResumePath;
+            const rawLen = window.__matchRawLen | 0;
+            const trackFiltered = window.__matchTrackFiltered || [];
+            const displayFiltered = applyMatchDisplayFilters(trackFiltered);
+
+            if (hintEl) {
+                if (!resumePath || !rawLen) {
+                    hintEl.style.display = 'none';
+                    hintEl.textContent = '';
+                } else if (!trackFiltered.length) {
+                    hintEl.textContent =
+                        '当前赛道/关键词下没有可展示的匹配结果（库中该简历共有 ' +
+                        rawLen +
+                        ' 条）。请调整筛选或先对当前范围执行「开始匹配」。';
+                    hintEl.style.display = 'block';
+                } else {
+                    const parts = [];
+                    if (trackFiltered.length < rawLen) {
+                        parts.push(
+                            '赛道/关键词：展示 ' +
+                                trackFiltered.length +
+                                ' / ' +
+                                rawLen +
+                                ' 条（其余已按赛道/关键词隐藏）'
+                        );
+                    }
+                    const hiddenByDisplay = trackFiltered.length - displayFiltered.length;
+                    if (hiddenByDisplay > 0) {
+                        parts.push('列表筛选另隐藏 ' + hiddenByDisplay + ' 条（已标记或低于阈值）');
+                    }
+                    if (!displayFiltered.length) {
+                        hintEl.textContent =
+                            (parts.length ? parts.join('；') + '。' : '') +
+                            '当前勾选已隐藏全部可见条目，请取消「隐藏已标记」或「隐藏低分」。';
+                        hintEl.style.display = 'block';
+                    } else if (parts.length) {
+                        hintEl.textContent = parts.join('；') + '。';
+                        hintEl.style.display = 'block';
+                    } else {
+                        hintEl.style.display = 'none';
+                        hintEl.textContent = '';
+                    }
+                }
+            }
+
+            if (!trackFiltered.length && rawLen) {
+                listEl.innerHTML =
+                    '<p class="match-empty">当前筛选条件下暂无匹配结果。请放宽赛道/关键词，或先点击「开始匹配」生成该范围内的评分。</p>';
+                return;
+            }
+            if (!trackFiltered.length && !rawLen) {
+                listEl.innerHTML = '<p class="match-empty">暂无匹配结果，请先运行匹配</p>';
+                return;
+            }
+            if (!displayFiltered.length) {
+                listEl.innerHTML =
+                    '<p class="match-empty">列表筛选下暂无条目。取消「隐藏已标记」或调低「隐藏低于」阈值即可重新显示。</p>';
+                return;
+            }
+            renderMatchResults(displayFiltered, resumePath);
+        }
+
         /** 仅展示符合当前赛道勾选 + 搜索关键词的岗位（与「开始匹配」范围一致） */
         function filterMatchResultsForView(results) {
             if (!results || !results.length) return [];
@@ -1271,31 +1379,78 @@
                 const data = await res.json();
                 const raw = data.results || [];
                 const filtered = filterMatchResultsForView(raw);
-                if (hintEl) {
-                    if (!resumePath || !raw.length) {
-                        hintEl.style.display = 'none';
-                        hintEl.textContent = '';
-                    } else if (filtered.length < raw.length) {
-                        hintEl.textContent = '当前筛选下展示 ' + filtered.length + ' 条（该简历共有 ' + raw.length + ' 条匹配记录；已隐藏不符合当前赛道/关键词的条目）';
-                        hintEl.style.display = 'block';
-                    } else if (!filtered.length) {
-                        hintEl.textContent = '当前赛道/关键词下没有可展示的匹配结果（库中该简历共有 ' + raw.length + ' 条）。请调整筛选或先对当前范围执行「开始匹配」。';
-                        hintEl.style.display = 'block';
-                    } else {
-                        hintEl.style.display = 'none';
-                        hintEl.textContent = '';
-                    }
-                }
+                window.__matchRawLen = raw.length;
+                window.__matchTrackFiltered = filtered;
                 if (!filtered.length && raw.length) {
-                    listEl.innerHTML = '<p class="match-empty">当前筛选条件下暂无匹配结果。请放宽赛道/关键词，或先点击「开始匹配」生成该范围内的评分。</p>';
+                    if (hintEl) {
+                        hintEl.textContent =
+                            '当前赛道/关键词下没有可展示的匹配结果（库中该简历共有 ' +
+                            raw.length +
+                            ' 条）。请调整筛选或先对当前范围执行「开始匹配」。';
+                        hintEl.style.display = 'block';
+                    }
+                    listEl.innerHTML =
+                        '<p class="match-empty">当前筛选条件下暂无匹配结果。请放宽赛道/关键词，或先点击「开始匹配」生成该范围内的评分。</p>';
                     return;
                 }
-                renderMatchResults(filtered, resumePath);
+                refreshMatchResultsDisplay(resumePath);
             } catch (e) {
-                if (hintEl) { hintEl.style.display = 'none'; hintEl.textContent = ''; }
+                window.__matchTrackFiltered = null;
+                window.__matchRawLen = 0;
+                if (hintEl) {
+                    hintEl.style.display = 'none';
+                    hintEl.textContent = '';
+                }
                 listEl.innerHTML = '<p class="match-empty">加载失败</p>';
             }
         }
+
+        (function initMatchDisplayFilters() {
+            const hm = document.getElementById('matchDisplayHideMarked');
+            const hl = document.getElementById('matchDisplayHideLowScore');
+            const cutoff = document.getElementById('matchDisplayLowCutoff');
+            if (!hm || !hl || !cutoff) return;
+
+            function syncCutoffDisabled() {
+                const dis = !hl.checked;
+                cutoff.disabled = dis;
+                cutoff.setAttribute('aria-disabled', dis ? 'true' : 'false');
+            }
+
+            try {
+                if (localStorage.getItem(LS_MATCH_HIDE_MARKED) === '1') hm.checked = true;
+                if (localStorage.getItem(LS_MATCH_HIDE_LOW) === '1') hl.checked = true;
+                const savedCut = localStorage.getItem(LS_MATCH_LOW_CUTOFF);
+                if (savedCut != null && savedCut !== '') {
+                    const n = parseInt(savedCut, 10);
+                    if (Number.isFinite(n)) cutoff.value = String(Math.max(0, Math.min(100, n)));
+                }
+            } catch (err) { /* ignore */ }
+
+            syncCutoffDisabled();
+
+            function persistPrefs() {
+                try {
+                    localStorage.setItem(LS_MATCH_HIDE_MARKED, hm.checked ? '1' : '0');
+                    localStorage.setItem(LS_MATCH_HIDE_LOW, hl.checked ? '1' : '0');
+                    let v = parseInt(String(cutoff.value).trim(), 10);
+                    if (!Number.isFinite(v)) v = 60;
+                    v = Math.max(0, Math.min(100, v));
+                    cutoff.value = String(v);
+                    localStorage.setItem(LS_MATCH_LOW_CUTOFF, String(v));
+                } catch (err) { /* ignore */ }
+            }
+
+            function onFilterChange() {
+                syncCutoffDisabled();
+                persistPrefs();
+                refreshMatchResultsDisplay(currentMatchResumePath);
+            }
+
+            hm.addEventListener('change', onFilterChange);
+            hl.addEventListener('change', onFilterChange);
+            cutoff.addEventListener('change', onFilterChange);
+        })();
 
         (function bindMatchListRefreshOnScopeChange() {
             if (window._matchListScopeRefreshBound) return;
@@ -1352,6 +1507,12 @@
                 const data = await res.json();
                 if (!res.ok) throw new Error((data && data.detail) || '保存失败');
                 syncAppliedButtonUi(btn, nextStatus);
+                if (window.__matchTrackFiltered && Array.isArray(window.__matchTrackFiltered)) {
+                    window.__matchTrackFiltered.forEach(function(row) {
+                        if (String(row.job_id) === String(jobId)) row.applied = nextStatus;
+                    });
+                }
+                refreshMatchResultsDisplay(rp);
             } catch (err) {
                 alert('更新投递状态失败: ' + err.message);
                 syncAppliedButtonUi(btn, prevStatus);
@@ -2251,27 +2412,51 @@
         
         document.getElementById('btnExportExcel').addEventListener('click', () => downloadExport('xlsx'));
         
+        function showPollFailure(message) {
+            const logsContainer = document.getElementById('logsContainer');
+            if (!logsContainer) return;
+            logsContainer.innerHTML = '';
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry ERROR';
+            logEntry.textContent = '[轮询失败] ' + message + '（常见原因：页面地址与 API 不一致、或保存代码触发了热重载导致任务丢失——请刷新页面后重新「开始抓取」。）';
+            logsContainer.appendChild(logEntry);
+        }
+
+        async function pollTaskStatusOnce() {
+            if (!currentTaskId) return;
+            try {
+                const response = await fetch(`/api/task/${currentTaskId}/status`);
+                let data = {};
+                try {
+                    data = await response.json();
+                } catch (parseErr) {
+                    showPollFailure('服务器返回非 JSON，HTTP ' + response.status);
+                    return;
+                }
+                if (!response.ok) {
+                    const detail = data.detail != null ? String(data.detail) : JSON.stringify(data);
+                    showPollFailure('HTTP ' + response.status + ' — ' + detail);
+                    return;
+                }
+                updateStatus(data);
+                if (data.status === 'completed' || data.status === 'failed' || data.status === 'cancelled') {
+                    if (statusCheckInterval) clearInterval(statusCheckInterval);
+                    statusCheckInterval = null;
+                    setPrimaryTaskButtonsDisabled(false);
+                    if (data.status === 'completed' && data.result && data.result.output_file) {
+                        document.getElementById('excel_path').value = data.result.output_file;
+                    }
+                }
+            } catch (error) {
+                console.error('获取状态失败:', error);
+                showPollFailure(error.message || String(error));
+            }
+        }
+
         function startStatusPolling() {
             if (statusCheckInterval) clearInterval(statusCheckInterval);
-            statusCheckInterval = setInterval(async () => {
-                if (!currentTaskId) return;
-                try {
-                    const response = await fetch(`/api/task/${currentTaskId}/status`);
-                    const data = await response.json();
-                    updateStatus(data);
-                    if (data.status === 'completed' || data.status === 'failed' || data.status === 'cancelled') {
-                        clearInterval(statusCheckInterval);
-                        setPrimaryTaskButtonsDisabled(false);
-                        if (data.status === 'completed') {
-                            if (data.result.output_file) {
-                                document.getElementById('excel_path').value = data.result.output_file;
-                            }
-                        }
-                    }
-                } catch (error) {
-                    console.error('获取状态失败:', error);
-                }
-            }, 2000);
+            pollTaskStatusOnce();
+            statusCheckInterval = setInterval(pollTaskStatusOnce, 2000);
         }
         
         function updateStatus(data) {
@@ -2304,7 +2489,7 @@
                 confirmSection.classList.remove('show');
             }
             
-            const progress = data.progress;
+            const progress = data.progress || { current: 0, total: 0, percentage: 0 };
             const percentage = progress.percentage || 0;
             const progressFill = document.getElementById('progressFill');
             progressFill.style.width = percentage + '%';
@@ -2314,7 +2499,7 @@
             
             const logsContainer = document.getElementById('logsContainer');
             logsContainer.innerHTML = '';
-            data.logs.forEach(log => {
+            (data.logs || []).forEach(log => {
                 const logEntry = document.createElement('div');
                 logEntry.className = 'log-entry ' + log.level;
                 logEntry.textContent = `[${log.timestamp.split('T')[1].split('.')[0]}] ${log.message}`;
@@ -2322,26 +2507,27 @@
             });
             logsContainer.scrollTop = logsContainer.scrollHeight;
             
-            if (data.result.output_file || data.result.total_labeled !== undefined || data.result.resume_path || data.result.checked_total !== undefined) {
+            const res = data.result || {};
+            if (res.output_file || res.total_labeled !== undefined || res.resume_path || res.checked_total !== undefined) {
                 const resultSection = document.getElementById('resultSection');
                 const resultContent = document.getElementById('resultContent');
                 resultSection.classList.add('show');
                 let resultHtml = '';
-                if (data.result.output_file) {
-                    resultHtml += `<p><strong>结果文件:</strong> <a href="/api/file/${encodeURIComponent(data.result.output_file)}" class="result-link" target="_blank">${data.result.output_file}</a></p>
-                    <p><strong>成功:</strong> ${data.result.success_count} | <strong>失败:</strong> ${data.result.failed_count}</p>`;
+                if (res.output_file) {
+                    resultHtml += `<p><strong>结果文件:</strong> <a href="/api/file/${encodeURIComponent(res.output_file)}" class="result-link" target="_blank">${res.output_file}</a></p>
+                    <p><strong>成功:</strong> ${res.success_count} | <strong>失败:</strong> ${res.failed_count}</p>`;
                 }
-                if (data.result.total_labeled !== undefined) {
-                    resultHtml += `<p><strong>赛道标注:</strong> 已标注 ${data.result.total_labeled} 条，失败 ${data.result.failed_count || 0} 条</p>`;
+                if (res.total_labeled !== undefined) {
+                    resultHtml += `<p><strong>赛道标注:</strong> 已标注 ${res.total_labeled} 条，失败 ${res.failed_count || 0} 条</p>`;
                 }
-                if (data.result.checked_total !== undefined) {
-                    resultHtml += `<p><strong>排除过期岗位:</strong> 已检测 ${data.result.checked_total} 条 — 在招 ${data.result.open_count ?? 0}，已关闭 ${data.result.closed_count ?? 0}，无法判定 ${data.result.unknown_count ?? 0}，请求失败 ${data.result.failed_count ?? 0}</p>`;
+                if (res.checked_total !== undefined) {
+                    resultHtml += `<p><strong>排除过期岗位:</strong> 已检测 ${res.checked_total} 条 — 在招 ${res.open_count ?? 0}，已关闭 ${res.closed_count ?? 0}，无法判定 ${res.unknown_count ?? 0}，请求失败 ${res.failed_count ?? 0}</p>`;
                 }
-                if (data.result.resume_path) {
-                    resultHtml += `<p><strong>匹配评分:</strong> 成功 ${data.result.success_count || 0} 条，失败 ${data.result.failed_count || 0} 条</p>`;
+                if (res.resume_path) {
+                    resultHtml += `<p><strong>匹配评分:</strong> 成功 ${res.success_count || 0} 条，失败 ${res.failed_count || 0} 条</p>`;
                 }
-                if (data.result.total_tokens) {
-                    resultHtml += `<p><strong>Token 统计:</strong> 输入 ${data.result.total_input_tokens || 0}, 输出 ${data.result.total_output_tokens || 0}, 合计 ${data.result.total_tokens}</p>`;
+                if (res.total_tokens) {
+                    resultHtml += `<p><strong>Token 统计:</strong> 输入 ${res.total_input_tokens || 0}, 输出 ${res.total_output_tokens || 0}, 合计 ${res.total_tokens}</p>`;
                 }
                 if (resultHtml) resultContent.innerHTML = resultHtml;
             }

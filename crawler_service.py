@@ -87,7 +87,8 @@ def run_crawl_task(task_id: str, params: Dict, output_dir: str = "output"):
         service_logger.addHandler(task_handler)
         service_logger.setLevel(logging.INFO)
         
-        # 创建爬虫实例
+        task_manager.add_log(task_id, "正在初始化浏览器（DrissionPage Chromium）…", "INFO")
+        # 创建爬虫实例（此处可能耗时较久；若卡住请看终端是否有浏览器路径 / 端口报错）
         crawler = ZhipinCrawler(headless=False)  # 显示浏览器窗口
         
         # 创建包装器，支持确认机制
@@ -296,7 +297,13 @@ def start_crawl_task(params: Dict, output_dir: str = "output") -> str:
     """
     # 创建任务
     task_id = task_manager.create_task("crawl", params)
-    
+    # 主线程立即写一条日志，避免前端首轮轮询前线程卡在 Chromium 初始化时界面一直停在「等待任务开始」
+    task_manager.add_log(
+        task_id,
+        "任务已提交：爬虫线程正在启动；接下来将初始化浏览器（若数十秒无更新，请查看运行 Web 服务的终端输出）。",
+        "INFO",
+    )
+
     # 在后台线程中执行
     thread = threading.Thread(
         target=run_crawl_task,

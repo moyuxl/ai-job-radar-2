@@ -47,6 +47,8 @@ _MATCH_AGENT_MODE_RAW = (os.getenv("MATCH_AGENT_MODE") or "single").strip().lowe
 _MATCH_AGENT_SINGLE_MAX_JD_CHARS = int(os.getenv("MATCH_AGENT_SINGLE_MAX_JD_CHARS", "12000"))
 # 后置校验失败后允许模型重试的次数（不含首次），默认 2 → 最多 3 次 API 调用
 _MATCH_AGENT_POST_VALIDATE_MAX_RETRIES = int(os.getenv("MATCH_AGENT_POST_VALIDATE_MAX_RETRIES", "2"))
+# DeepSeek V4 等「思考模式」在强制 tool_choice 时易返回异常或需回传 reasoning_content；默认对 DeepSeek 主机名/模型名关闭 thinking
+_MATCH_AGENT_DEEPSEEK_DISABLE_THINKING = (os.getenv("MATCH_AGENT_DEEPSEEK_DISABLE_THINKING") or "auto").strip().lower()
 
 
 def _match_agent_mode() -> str:
@@ -136,6 +138,39 @@ def _create_match_agent_client(api_key: str, base_url: str) -> OpenAI:
         timeout=timeout,
         max_retries=_MATCH_AGENT_SDK_MAX_RETRIES,
     )
+
+
+def _match_agent_extra_body(base_url: str, model_name: str) -> Optional[Dict[str, Any]]:
+    """
+    DeepSeek Chat API：关闭 thinking 可减少强制 function call 时的异常响应。
+    - auto（默认）：base_url 或 model 名含 deepseek 时附加 extra_body
+    - force/on/1/true：始终附加（中转域名不含 deepseek 时可手动开启）
+    - false/off/0：不附加
+    """
+    flag = _MATCH_AGENT_DEEPSEEK_DISABLE_THINKING
+    if flag in ("0", "false", "no", "off"):
+        return None
+    if flag in ("force", "always", "on", "1", "true", "yes"):
+        return {"thinking": {"type": "disabled"}}
+    bu = (base_url or "").lower()
+    mn = (model_name or "").lower()
+    if "deepseek" not in bu and "deepseek" not in mn:
+        return None
+    return {"thinking": {"type": "disabled"}}
+
+
+def _chat_completion_match(
+    client: OpenAI, base_url: str, model_name: str, **kwargs: Any
+):
+    eb = _match_agent_extra_body(base_url, model_name)
+    if eb:
+        kwargs = dict(kwargs)
+        existing = kwargs.get("extra_body")
+        if isinstance(existing, dict):
+            kwargs["extra_body"] = {**existing, **eb}
+        else:
+            kwargs["extra_body"] = eb
+    return _chat_completion_with_retry(client, **kwargs)
 
 
 def _chat_completion_with_retry(client: OpenAI, **kwargs: Any):
@@ -603,6 +638,9 @@ def build_advice_from_submit(sub: Dict[str, Any]) -> str:
 
 def _assistant_message_to_dict(msg) -> Dict[str, Any]:
     d: Dict[str, Any] = {"role": "assistant", "content": msg.content}
+    rc = getattr(msg, "reasoning_content", None)
+    if rc:
+        d["reasoning_content"] = rc
     tcs = getattr(msg, "tool_calls", None) or []
     if tcs:
         d["tool_calls"] = []
@@ -747,8 +785,10 @@ def run_match_agent_single(
     )
 
     for attempt in range(max_attempts):
-        resp = _chat_completion_with_retry(
+        resp = _chat_completion_match(
             client,
+            base_url,
+            model_name,
             model=model_name,
             messages=messages,
             tools=MATCH_AGENT_SUBMIT_ONLY_TOOLS,
@@ -930,8 +970,10 @@ def run_match_agent_loop(
 
         messages_api = _messages_for_api_request(messages)
         try:
-            resp = _chat_completion_with_retry(
+            resp = _chat_completion_match(
                 client,
+                base_url,
+                model_name,
                 model=model_name,
                 messages=messages_api,
                 tools=MATCH_AGENT_TOOLS,

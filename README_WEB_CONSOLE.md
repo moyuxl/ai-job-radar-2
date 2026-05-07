@@ -226,8 +226,8 @@ ai-job-radar2/
 
 ## 注意事项
 
-1. **浏览器窗口**：抓取会打开 DrissionPage 控制的 Chromium，请勿关闭  
-   - 若一打开就是 **hao123** 等导航站：多为本机「改装浏览器」或默认主页被锁。项目已使用 **独立临时配置档**（`drission_browser.py`）减轻该问题；仍出现时请在 `.env` 或系统环境里指定 **官方 Chrome / Edge** 可执行文件路径：`CHROME_PATH` 或 `DRISSION_BROWSER_PATH`（例如 `C:\Program Files\Google\Chrome\Application\chrome.exe`）。
+1. **浏览器窗口**：抓取会打开 DrissionPage 控制的 Chromium，请勿关闭
+  - 若一打开就是 **hao123** 等导航站：多为本机「改装浏览器」或默认主页被锁。项目已使用 **独立临时配置档**（`drission_browser.py`）减轻该问题；仍出现时请在 `.env` 或系统环境里指定 **官方 Chrome / Edge** 可执行文件路径：`CHROME_PATH` 或 `DRISSION_BROWSER_PATH`（例如 `C:\Program Files\Google\Chrome\Application\chrome.exe`）。
 2. **登录确认**：若检测到登录页，点击「我已登录，继续执行」
 3. **任务状态**：轮询展示，完成后停止刷新
 4. **匹配缓存**：同一简历+岗位只评一次，差距分析同理
