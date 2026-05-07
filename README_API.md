@@ -21,13 +21,30 @@ pip install -r requirements.txt
 
 ## 配置
 
-确保 `.env` 文件中包含以下配置：
+`api_server.py` 与工作台共用同一套 **OpenAI 兼容** 客户端：至少配置 **DeepSeek**（`DEEPSEEK_API_KEY` + `DEEPSEEK_BASE_URL`）或 **Supermind**（三项齐全）；二者都配置时，默认使用可用列表中的第一项（一般为 V4 Flash）。
+
+**方式 A：DeepSeek（推荐与主线一致）**
+
+```
+DEEPSEEK_API_KEY=your_key
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL_V4_FLASH=deepseek-v4-flash
+DEEPSEEK_MODEL_V4_PRO=deepseek-v4-pro
+```
+
+请求分析接口时的 **`model_id`**：`deepseek_v4_flash` 或 `deepseek_v4_pro`。也可用旧环境变量名 `DEEPSEEK_MODEL_CHAT` / `DEEPSEEK_MODEL_REASONER` 代替上面两行模型名。
+
+**方式 B：Supermind（或其他兼容提供商）**
 
 ```
 SUPER_MIND_API_KEY=your_api_key
 SUPER_MIND_BASE_URL=https://your-api-url.com/v1
 SUPER_MIND_MODEL=your_model_name
 ```
+
+对应 **`model_id`**：`supermind`。
+
+更多说明见 [**README_WEB_CONSOLE.md**](README_WEB_CONSOLE.md)「配置」与根目录 **`.env.example`**。
 
 ## 启动服务器
 

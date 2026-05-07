@@ -23,6 +23,8 @@ import uvicorn
 from openai import OpenAI
 from dotenv import load_dotenv
 
+from deepseek_env import deepseek_flash_api_model, deepseek_pro_api_model
+
 if sys.platform == 'win32':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
@@ -58,22 +60,18 @@ if templates_dir.exists():
 # 模型配置（从 .env 加载）
 def _get_model_config(model_id: str) -> Tuple[str, str, str]:
     """根据 model_id 返回 (api_key, base_url, model_name)"""
+    _dk = os.getenv("DEEPSEEK_API_KEY")
+    _db = os.getenv("DEEPSEEK_BASE_URL")
+    _flash = (_dk, _db, deepseek_flash_api_model())
+    _pro = (_dk, _db, deepseek_pro_api_model())
     configs = {
         "supermind": (
             os.getenv("SUPER_MIND_API_KEY"),
             os.getenv("SUPER_MIND_BASE_URL"),
             os.getenv("SUPER_MIND_MODEL"),
         ),
-        "deepseek_chat": (
-            os.getenv("DEEPSEEK_API_KEY"),
-            os.getenv("DEEPSEEK_BASE_URL"),
-            os.getenv("DEEPSEEK_MODEL_CHAT", "deepseek-chat"),
-        ),
-        "deepseek_reasoner": (
-            os.getenv("DEEPSEEK_API_KEY"),
-            os.getenv("DEEPSEEK_BASE_URL"),
-            os.getenv("DEEPSEEK_MODEL_REASONER", "deepseek-reasoner"),
-        ),
+        "deepseek_v4_flash": _flash,
+        "deepseek_v4_pro": _pro,
     }
     cfg = configs.get(model_id)
     if not cfg or not all(cfg):
@@ -82,11 +80,11 @@ def _get_model_config(model_id: str) -> Tuple[str, str, str]:
 
 
 def get_available_models() -> List[Dict[str, str]]:
-    """返回已配置的模型列表（默认优先 DeepSeek Chat）"""
+    """返回已配置的模型列表（默认优先 DeepSeek V4 Flash）"""
     models = []
     if all(os.getenv(k) for k in ("DEEPSEEK_API_KEY", "DEEPSEEK_BASE_URL")):
-        models.append({"id": "deepseek_chat", "name": "DeepSeek Chat"})
-        models.append({"id": "deepseek_reasoner", "name": "DeepSeek Reasoner"})
+        models.append({"id": "deepseek_v4_flash", "name": "V4 Flash"})
+        models.append({"id": "deepseek_v4_pro", "name": "V4 Pro"})
     if all(os.getenv(k) for k in ("SUPER_MIND_API_KEY", "SUPER_MIND_BASE_URL", "SUPER_MIND_MODEL")):
         models.append({"id": "supermind", "name": "Supermind"})
     return models
@@ -260,7 +258,7 @@ def call_llm_analyze_with_retry(job_desc: str, max_retries: int = 1, model_id: O
     Args:
         job_desc: 职位描述文本
         max_retries: 最大重试次数（默认1次）
-        model_id: 模型 ID（supermind/deepseek），None 时使用默认
+        model_id: 模型 ID（supermind/deepseek_v4_flash/deepseek_v4_pro），None 时使用默认
     
     Returns:
         Tuple[分析结果字典, token使用信息字典, 错误信息]
@@ -324,7 +322,7 @@ def call_llm_analyze(job_desc: str, aggressive_repair: bool = False, model_id: O
     Args:
         job_desc: 职位描述文本
         aggressive_repair: 是否使用激进的 JSON 修复策略（用于重试）
-        model_id: 模型 ID（supermind/deepseek），None 时使用默认
+        model_id: 模型 ID（supermind/deepseek_v4_flash/deepseek_v4_pro），None 时使用默认
     
     Returns:
         Tuple[分析结果字典, token使用信息字典]

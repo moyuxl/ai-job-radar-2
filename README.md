@@ -28,7 +28,7 @@ python start_web_console.py
 ## 技术栈（概要）
 
 - **后端**：FastAPI（`web_console.py`）、SQLite（`jobs.db`）、DrissionPage 抓取
-- **LLM**：OpenAI 兼容接口（默认 DeepSeek，见 `.env`）
+- **LLM**：OpenAI 兼容接口；默认 **DeepSeek V4**（`deepseek-v4-flash` / `deepseek-v4-pro`，由 `.env` 配置）。工作台与各任务里的 **`model_id`** 为 `deepseek_v4_flash`、`deepseek_v4_pro`（及可选 **Supermind**）。解析逻辑见 `deepseek_env.py`，模板见 `.env.example`
 - **前端**：Jinja 模板 + 静态资源；工作台布局见 `static/styles/workbench.css`，表单与控制台样式见 `static/styles/console.css`
 
 ## 仓库结构（核心）
@@ -46,6 +46,7 @@ ai-job-radar2/
 ├── match_agent.py              # 深度匹配 Agent
 ├── gap_service.py / gap_agent.py  # 改写与差距
 ├── resume_extractor.py         # 简历解析
+├── deepseek_env.py             # DeepSeek API model 名与环境变量解析（兼容旧变量名）
 ├── templates/
 │   ├── landing.html            # 首页
 │   └── web_console.html        # 工作台

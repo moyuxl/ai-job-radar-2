@@ -11,6 +11,8 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 
+from deepseek_env import deepseek_flash_api_model, deepseek_pro_api_model
+
 load_dotenv()
 logger = logging.getLogger(__name__)
 
@@ -33,22 +35,18 @@ elif MATCH_BATCH_SIZE > 5:
 
 
 def _get_model_config(model_id: str) -> Tuple[str, str, str]:
+    _dk = os.getenv("DEEPSEEK_API_KEY")
+    _db = os.getenv("DEEPSEEK_BASE_URL")
+    _flash = (_dk, _db, deepseek_flash_api_model())
+    _pro = (_dk, _db, deepseek_pro_api_model())
     configs = {
         "supermind": (
             os.getenv("SUPER_MIND_API_KEY"),
             os.getenv("SUPER_MIND_BASE_URL"),
             os.getenv("SUPER_MIND_MODEL"),
         ),
-        "deepseek_chat": (
-            os.getenv("DEEPSEEK_API_KEY"),
-            os.getenv("DEEPSEEK_BASE_URL"),
-            os.getenv("DEEPSEEK_MODEL_CHAT", "deepseek-chat"),
-        ),
-        "deepseek_reasoner": (
-            os.getenv("DEEPSEEK_API_KEY"),
-            os.getenv("DEEPSEEK_BASE_URL"),
-            os.getenv("DEEPSEEK_MODEL_REASONER", "deepseek-reasoner"),
-        ),
+        "deepseek_v4_flash": _flash,
+        "deepseek_v4_pro": _pro,
     }
     cfg = configs.get(model_id)
     if not cfg or not all(cfg):

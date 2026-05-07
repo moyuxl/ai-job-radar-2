@@ -79,7 +79,7 @@ def _log_tool_call(tool_name: str, result_summary: str, token_info: Dict):
     )
 
 
-def run_gap_task(task_id: str, job_id: str, resume_path: str, model_id: str = "deepseek_chat"):
+def run_gap_task(task_id: str, job_id: str, resume_path: str, model_id: str = "deepseek_v4_flash"):
     """后台执行差距分析：从 match_results 读 JSON → 仅调用改写 Agent（submit_rewrite_result）。"""
     try:
         logger.info(f"[任务 {task_id}] ========== 差距分析任务开始 ==========")
@@ -96,6 +96,11 @@ def run_gap_task(task_id: str, job_id: str, resume_path: str, model_id: str = "d
             task_manager.add_log(task_id, f"岗位 {job_id} 不存在", "ERROR")
             task_manager.set_error(task_id, "岗位不存在")
             logger.error(f"[任务 {task_id}] 岗位不存在，任务终止")
+            return
+        if (job.get("recruitment_status") or "") == "closed":
+            msg = "该岗位已标记为招聘结束（closed），不再做差距分析"
+            task_manager.add_log(task_id, msg, "WARNING")
+            task_manager.set_error(task_id, msg)
             return
         if not job.get("job_desc"):
             task_manager.add_log(task_id, "岗位无职位描述", "WARNING")

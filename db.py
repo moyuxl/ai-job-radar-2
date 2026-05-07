@@ -186,14 +186,40 @@ def init_db() -> None:
         ("job_direction_primary", "TEXT"),
         ("job_direction_secondary", "TEXT"),
         ("direction_detail", "TEXT"),
+        ("recruitment_status", "TEXT"),       # open / closed / unknown（NULL=从未检测）
+        ("recruitment_checked_at", "TEXT"), # ISO 时间，最后一次检测页的时间
     ]:
         try:
             cur.execute(f"ALTER TABLE jobs ADD COLUMN {col_def[0]} {col_def[1]}")
         except sqlite3.OperationalError:
             pass  # 列已存在
 
+    # 在招(open)但缺少 recruitment_checked_at 的旧数据：补时间戳，否则「在招 N 天冷却」无法排除这类行
+    try:
+        cur.execute(
+            """
+            UPDATE jobs
+            SET recruitment_checked_at = COALESCE(
+                NULLIF(TRIM(detail_updated_at), ''),
+                NULLIF(TRIM(last_seen_at), ''),
+                NULLIF(TRIM(first_seen_at), ''),
+                datetime('now')
+            )
+            WHERE recruitment_status = 'open'
+              AND (recruitment_checked_at IS NULL OR TRIM(recruitment_checked_at) = '')
+            """
+        )
+    except sqlite3.OperationalError:
+        pass
+
     conn.commit()
     conn.close()
+
+
+# 招聘状态：closed=已关闭，不纳入赛道筛选/匹配列表等；open/unknown/NULL 仍展示（unknown 表示曾检测但无法判定）
+RECRUITMENT_CLOSED = "closed"
+RECRUITMENT_OPEN = "open"
+RECRUITMENT_UNKNOWN = "unknown"
 
 
 # ---------- 列表阶段：写入 / 更新岗位 ----------
@@ -305,6 +331,7 @@ def get_jobs_to_crawl_detail(limit: int = 50) -> List[Dict]:
         FROM jobs
         WHERE (job_desc IS NULL OR job_desc = '')
           AND job_url IS NOT NULL AND job_url != ''
+          AND (recruitment_status IS NULL OR recruitment_status != 'closed')
         LIMIT ?
         """,
         (limit,),
@@ -414,6 +441,7 @@ def get_jobs_to_label_track(
                    job_tags, job_requirements, job_desc, company_intro
             FROM jobs
             WHERE job_desc IS NOT NULL AND job_desc != ''
+              AND (recruitment_status IS NULL OR recruitment_status != 'closed')
               AND (
                 (company_type IS NULL OR company_type = '')
                 OR (job_direction_primary IS NULL OR job_direction_primary = '')
@@ -430,6 +458,7 @@ def get_jobs_to_label_track(
                    job_tags, job_requirements, job_desc, company_intro
             FROM jobs
             WHERE job_desc IS NOT NULL AND job_desc != ''
+              AND (recruitment_status IS NULL OR recruitment_status != 'closed')
             ORDER BY last_seen_at DESC
             LIMIT ?
             """,
@@ -475,6 +504,89 @@ def update_job_track_label(
     conn.close()
 
 
+def update_job_recruitment_status(
+    job_id: str,
+    status: Optional[str],
+    checked_at_iso: str,
+) -> None:
+    """
+    更新岗位招聘状态与最近检测时间。
+    status: 'closed' / 'open' / 'unknown' / None（None 表示仅更新检测时间，不改状态）
+    """
+    conn = get_conn()
+    cur = conn.cursor()
+    if status is not None and str(status).strip() != "":
+        cur.execute(
+            """
+            UPDATE jobs
+            SET recruitment_status = ?, recruitment_checked_at = ?
+            WHERE job_id = ?
+            """,
+            (str(status).strip(), checked_at_iso, job_id),
+        )
+    else:
+        cur.execute(
+            """
+            UPDATE jobs
+            SET recruitment_checked_at = ?
+            WHERE job_id = ?
+            """,
+            (checked_at_iso, job_id),
+        )
+    conn.commit()
+    conn.close()
+
+
+def get_jobs_for_recruitment_check(limit: int = 500, open_cooldown_days: int = 7) -> List[Dict]:
+    """
+    待检测岗位：有详情链接、且当前未标记为已关闭。
+
+    - recruitment_status=open 且 recruitment_checked_at 在「最近 open_cooldown_days 天内」的，不再排入本批（避免隔天重复扫在招岗）。
+    - open_cooldown_days<=0 时不做该冷却，open 也会每次可入选。
+    - unknown / NULL 状态不受冷却影响（仍会按排序入选）。
+
+    排序：优先从未检测过的（recruitment_checked_at IS NULL），其次按 last_seen_at 较新优先。
+    """
+    conn = get_conn()
+    cur = conn.cursor()
+    cooldown = max(0, int(open_cooldown_days))
+    if cooldown <= 0:
+        cur.execute(
+            """
+            SELECT job_id, job_url, job_name, company_name
+            FROM jobs
+            WHERE job_url IS NOT NULL AND TRIM(job_url) != ''
+              AND (recruitment_status IS NULL OR recruitment_status != 'closed')
+            ORDER BY (recruitment_checked_at IS NULL) DESC, last_seen_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        )
+    else:
+        mod = f"-{cooldown} days"
+        cur.execute(
+            """
+            SELECT job_id, job_url, job_name, company_name
+            FROM jobs
+            WHERE job_url IS NOT NULL AND TRIM(job_url) != ''
+              AND (recruitment_status IS NULL OR recruitment_status != 'closed')
+              AND NOT (
+                recruitment_status = 'open'
+                AND recruitment_checked_at IS NOT NULL
+                AND TRIM(recruitment_checked_at) != ''
+                AND datetime(replace(trim(recruitment_checked_at), 'T', ' '))
+                    >= datetime('now', ?)
+              )
+            ORDER BY (recruitment_checked_at IS NULL) DESC, last_seen_at DESC
+            LIMIT ?
+            """,
+            (mod, limit),
+        )
+    rows = cur.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
 def get_source_keywords() -> List[str]:
     """
     获取库中曾用于抓取的搜索关键词（jobs.source_keyword），用于赛道筛选标签与匹配阶段下拉框。
@@ -512,6 +624,7 @@ def get_jobs_by_track(
     min_confidence: Optional[str] = None,
     source_keywords: Optional[List[str]] = None,
     limit: int = 99999,
+    include_closed: bool = False,
 ) -> List[Dict]:
     """
     按赛道条件筛选已标注的岗位。
@@ -520,6 +633,7 @@ def get_jobs_by_track(
     - job_direction_primaries: 主方向列表（如 agent/c_end_ai），空/None 表示不筛
     - min_confidence: 最低置信度 "高"=仅高 "中"=高或中 ""/None=全部
     - source_keywords: 搜索关键词列表（如 AI产品经理），按 source_keyword 筛选
+    - include_closed: True 时在结果中包含招聘状态为已关闭的岗位（默认 False）
     """
     conn = get_conn()
     cur = conn.cursor()
@@ -527,6 +641,8 @@ def get_jobs_by_track(
         "company_type IS NOT NULL AND company_type != ''",
     ]
     params: list = []
+    if not include_closed:
+        conditions.append("(recruitment_status IS NULL OR recruitment_status != 'closed')")
     if source_keywords:
         # 忽略大小写匹配：AI产品经理 与 ai产品经理 均能筛出
         placeholders = ",".join("?" * len(source_keywords))
@@ -555,7 +671,8 @@ def get_jobs_by_track(
         SELECT job_id, job_name, company_name, company_industry, company_scale,
                salary_desc, job_url, job_desc, company_intro, company_type, job_nature, track_confidence,
                job_direction_primary, job_direction_secondary, direction_detail,
-               city_name, experience, job_tags, job_requirements, track_labeled_at, source_keyword
+               city_name, experience, job_tags, job_requirements, track_labeled_at, source_keyword,
+               recruitment_status, recruitment_checked_at
         FROM jobs
         WHERE {' AND '.join(conditions)}
         ORDER BY track_labeled_at DESC, last_seen_at DESC
@@ -575,7 +692,8 @@ def get_job_by_id(job_id: str) -> Optional[Dict]:
         """
         SELECT job_id, job_name, company_name, company_industry, company_scale,
                salary_desc, job_url, job_desc, company_intro, experience,
-               job_tags, job_requirements, company_type, city_name
+               job_tags, job_requirements, company_type, city_name,
+               recruitment_status
         FROM jobs WHERE job_id = ?
         """,
         (job_id,),
@@ -599,6 +717,7 @@ def get_jobs_to_analyze(limit: int = 50) -> List[Dict]:
         FROM jobs
         WHERE analyzed = 0
           AND job_desc IS NOT NULL AND job_desc != ''
+          AND (recruitment_status IS NULL OR recruitment_status != 'closed')
         LIMIT ?
         """,
         (limit,),
@@ -867,6 +986,7 @@ def get_match_deep_scan_stats(resume_path: str, threshold: int = 80, agent_versi
         FROM match_results mr
         INNER JOIN jobs j ON mr.job_id = j.job_id
         WHERE mr.resume_path = ?
+          AND (j.recruitment_status IS NULL OR j.recruitment_status != 'closed')
         """,
         (threshold, threshold, agent_version_deep, resume_path),
     )
@@ -897,6 +1017,7 @@ def get_match_rows_needing_deep_backfill(
         FROM match_results mr
         INNER JOIN jobs j ON mr.job_id = j.job_id
         WHERE mr.resume_path = ?
+          AND (j.recruitment_status IS NULL OR j.recruitment_status != 'closed')
           AND COALESCE(mr.match_score, 0) >= ?
           AND (
             mr.agent_version IS NULL OR TRIM(COALESCE(mr.agent_version, '')) = ''
@@ -1021,6 +1142,7 @@ def get_top_deep_matches_for_commonality(
         FROM match_results mr
         JOIN jobs j ON mr.job_id = j.job_id
         WHERE mr.resume_path = ?
+          AND (j.recruitment_status IS NULL OR j.recruitment_status != 'closed')
           AND mr.agent_version = 'match_agent_v1'
           AND mr.gap_analysis_json IS NOT NULL
           AND LENGTH(TRIM(mr.gap_analysis_json)) > 2
@@ -1103,12 +1225,13 @@ def get_match_results_by_resume(resume_path: str, limit: int = 500) -> List[Dict
         """
         SELECT mr.*, j.job_name, j.company_name, j.salary_desc, j.city_name, j.job_url, j.company_type,
                j.job_nature, j.track_confidence, j.source_keyword,
-               j.job_direction_primary, j.direction_detail,
+               j.job_direction_primary, j.direction_detail, j.recruitment_status,
                CASE WHEN aa.id IS NOT NULL THEN 1 ELSE 0 END as has_agent_analysis
         FROM match_results mr
         JOIN jobs j ON mr.job_id = j.job_id
         LEFT JOIN agent_analysis aa ON aa.job_id = mr.job_id AND aa.resume_path = mr.resume_path
         WHERE mr.resume_path = ?
+          AND (j.recruitment_status IS NULL OR j.recruitment_status != 'closed')
         ORDER BY mr.match_score DESC NULLS LAST
         LIMIT ?
         """,
@@ -1272,5 +1395,10 @@ __all__ = [
     "get_job_detail_cache_for_ids",
     "save_agent_analysis",
     "get_agent_analysis",
+    "RECRUITMENT_CLOSED",
+    "RECRUITMENT_OPEN",
+    "RECRUITMENT_UNKNOWN",
+    "update_job_recruitment_status",
+    "get_jobs_for_recruitment_check",
 ]
 

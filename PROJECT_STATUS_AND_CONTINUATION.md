@@ -151,7 +151,7 @@ python start_web_console.py
 
 ### 6.3 配置
 
-- **.env**：DEEPSEEK_API_KEY、DEEPSEEK_BASE_URL、DEEPSEEK_MODEL_CHAT/REASONER
+- **.env**：DEEPSEEK_API_KEY、DEEPSEEK_BASE_URL、`DEEPSEEK_MODEL_V4_FLASH` / `DEEPSEEK_MODEL_V4_PRO`（或旧名 `DEEPSEEK_MODEL_CHAT` / `DEEPSEEK_MODEL_REASONER`）；界面与请求里的模型 ID 为 `deepseek_v4_flash`、`deepseek_v4_pro`
 - **jobs.db**：自动创建于项目根目录
 - **output/**：Excel 导出
 - **resumes/**：简历 JSON

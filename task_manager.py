@@ -189,18 +189,22 @@ class TaskManager:
         
         logger.info(f"任务 {task_id} 事件等待结束，确认结果: {confirmed}")
         
-        # 重置状态
+        # 重置状态（禁止在持有 task_lock 时调用 add_log：add_log 内部也会申请同一把锁，会导致死锁）
         with self.task_lock:
             if task_id in self.tasks:
                 self.tasks[task_id]["waiting_message"] = None
                 if confirmed:
                     self.tasks[task_id]["status"] = TaskStatus.RUNNING.value
-                    self.add_log(task_id, "用户已确认，继续执行", "INFO")
-                    logger.info(f"任务 {task_id} 状态已更新为 RUNNING")
                 else:
                     self.tasks[task_id]["status"] = TaskStatus.CANCELLED.value
-                    self.add_log(task_id, "等待确认超时，任务已取消", "WARNING")
-        
+
+        if task_id in self.tasks:
+            if confirmed:
+                self.add_log(task_id, "用户已确认，继续执行", "INFO")
+                logger.info(f"任务 {task_id} 状态已更新为 RUNNING")
+            else:
+                self.add_log(task_id, "等待确认超时，任务已取消", "WARNING")
+
         logger.info(f"wait_for_confirm 方法返回: {confirmed}")
         return confirmed
     

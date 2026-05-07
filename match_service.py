@@ -420,6 +420,9 @@ def run_rerun_match_one(task_id: str, job_id: str, resume_path: str, model_id: s
         if not job_row:
             task_manager.set_error(task_id, "岗位不存在或已从库中删除")
             return
+        if (job_row.get("recruitment_status") or "") == "closed":
+            task_manager.set_error(task_id, "该岗位已标记为招聘结束（closed），不再参与匹配评分")
+            return
 
         data = load_resume_json(resume_path)
         profile = data.get("profile", {})

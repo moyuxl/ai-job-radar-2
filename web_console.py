@@ -19,6 +19,7 @@ from task_manager import task_manager, TaskStatus
 from crawler_service import start_crawl_task
 from analysis_service import start_analysis_task
 from track_label_service import start_track_label_task as start_track_label_task_service
+from job_expiry_service import start_job_expiry_check_task
 from api_server import get_available_models
 from time_estimator import get_estimated_end_time, format_estimated_range
 
@@ -91,12 +92,12 @@ class CrawlRequest(BaseModel):
 class AnalysisRequest(BaseModel):
     """分析请求模型"""
     excel_path: str  # 原始数据 Excel 文件路径
-    model_id: str = ""  # 模型 ID（supermind/deepseek），空时使用默认
+    model_id: str = ""  # 模型 ID（supermind/deepseek_v4_flash 等），空时使用默认
 
 
 class TrackLabelRequest(BaseModel):
     """赛道标注请求模型"""
-    model_id: str = ""  # 模型 ID，空时使用默认（DeepSeek Chat）
+    model_id: str = ""  # 模型 ID，空时使用默认（deepseek_v4_flash）
     only_unlabeled: bool = True  # 仅标注未标注的岗位
 
 
@@ -107,6 +108,14 @@ class TrackFilterRequest(BaseModel):
     job_direction_primaries: List[str] = []  # 主方向，空为不筛
     min_confidence: str = ""      # 最低置信度：高/中/空(全部)
     source_keywords: List[str] = []  # 搜索关键词（如 AI产品经理），按 source_keyword 筛选
+    include_closed: bool = False  # True 时在结果中包含招聘状态为已关闭的岗位
+
+
+class JobExpiryCheckRequest(BaseModel):
+    """排除过期岗位（检测详情页是否已关闭）"""
+    delay_sec: float = 1.5  # 每条间隔（秒）
+    limit: int = 500  # 本次最多检测条数
+    open_cooldown_days: int = 7  # 在招(open)岗位：距上次检测未满该天数则本批跳过；0=不冷却
 
 
 class PreferenceSaveRequest(BaseModel):
@@ -132,7 +141,7 @@ class MatchRerunOneRequest(BaseModel):
     """单岗位重新匹配（粗评 + 深度 Match Agent，覆盖原结果）"""
     job_id: str
     resume_path: str
-    model_id: str = "deepseek_chat"
+    model_id: str = "deepseek_v4_flash"
 
 
 class MatchAppliedRequest(BaseModel):
@@ -148,13 +157,13 @@ class GapStartRequest(BaseModel):
     """差距分析任务启动请求"""
     job_id: str
     resume_path: str
-    model_id: str = "deepseek_chat"
+    model_id: str = "deepseek_v4_flash"
 
 
 class CommonalityReportRequest(BaseModel):
     """头部深度匹配岗位共性分析（仅前端展示，不落库）"""
     resume_path: str
-    model_id: str = "deepseek_chat"
+    model_id: str = "deepseek_v4_flash"
     top_n: int = 10
     # 与「开始匹配」一致：仅在该赛道/关键词批次内取深度匹配 TopN；不传则与历史行为一致（不按赛道过滤）
     track_params: Optional[Dict[str, Any]] = None
@@ -163,7 +172,7 @@ class CommonalityReportRequest(BaseModel):
 class MasterRewriteRequest(BaseModel):
     """基于共性报告的主简历改写（一次改写，覆盖头部岗位共性）"""
     resume_path: str
-    model_id: str = "deepseek_chat"
+    model_id: str = "deepseek_v4_flash"
     commonality_report: dict
 
 
@@ -289,7 +298,7 @@ async def match_rerun_one(request: MatchRerunOneRequest):
         })
         thread = threading.Thread(
             target=run_rerun_match_one,
-            args=(task_id, request.job_id, request.resume_path, request.model_id or "deepseek_chat"),
+            args=(task_id, request.job_id, request.resume_path, request.model_id or "deepseek_v4_flash"),
         )
         thread.daemon = True
         thread.start()
@@ -394,13 +403,13 @@ async def match_commonality_report(request: CommonalityReportRequest):
         logger.info(
             "[API 共性分析] 请求 | resume_path=%s | model_id=%s | top_n=%s | track_params=%s",
             request.resume_path,
-            request.model_id or "deepseek_chat",
+            request.model_id or "deepseek_v4_flash",
             top_n,
             "set" if tp is not None else "none",
         )
         result, token_info = run_commonality_analysis(
             request.resume_path,
-            model_id=request.model_id or "deepseek_chat",
+            model_id=request.model_id or "deepseek_v4_flash",
             top_n=top_n,
             track_params=tp,
         )
@@ -445,7 +454,7 @@ async def start_gap_task(request: GapStartRequest):
         })
         thread = threading.Thread(
             target=run_gap_task,
-            args=(task_id, request.job_id, request.resume_path, request.model_id or "deepseek_chat"),
+            args=(task_id, request.job_id, request.resume_path, request.model_id or "deepseek_v4_flash"),
         )
         thread.daemon = True
         thread.start()
@@ -474,7 +483,7 @@ async def start_master_rewrite_task(request: MasterRewriteRequest):
             args=(
                 task_id,
                 request.resume_path,
-                request.model_id or "deepseek_chat",
+                request.model_id or "deepseek_v4_flash",
                 request.commonality_report,
             ),
         )
@@ -770,10 +779,26 @@ async def filter_jobs_by_track(request: TrackFilterRequest):
             job_direction_primaries=job_direction_primaries,
             min_confidence=min_confidence,
             source_keywords=source_keywords,
+            include_closed=request.include_closed,
         )
         return {"jobs": jobs, "total": len(jobs)}
     except Exception as e:
         logger.error(f"赛道筛选失败: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/jobs/expiry-check/start")
+async def start_job_expiry_check(request: JobExpiryCheckRequest):
+    """启动「排除过期岗位」任务：浏览器逐条打开详情页并更新 recruitment_status"""
+    try:
+        task_id = start_job_expiry_check_task(
+            delay_sec=float(request.delay_sec or 1.5),
+            limit=int(request.limit or 500),
+            open_cooldown_days=max(0, int(request.open_cooldown_days)),
+        )
+        return {"task_id": task_id, "message": "过期检测任务已启动"}
+    except Exception as e:
+        logger.error(f"启动过期检测失败: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -802,6 +827,7 @@ async def export_jobs_by_track(request: TrackFilterRequest, format: str = "xlsx"
             job_direction_primaries=job_direction_primaries,
             min_confidence=min_confidence,
             source_keywords=source_keywords,
+            include_closed=request.include_closed,
         )
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
         if format == "json":
@@ -838,6 +864,8 @@ async def export_jobs_by_track(request: TrackFilterRequest, format: str = "xlsx"
             "job_tags": "职位标签",
             "job_requirements": "职位要求",
             "track_labeled_at": "标注时间",
+            "recruitment_status": "招聘状态",
+            "recruitment_checked_at": "招聘检测时间",
         }
         df = df.rename(columns=column_names)
         bio = BytesIO()

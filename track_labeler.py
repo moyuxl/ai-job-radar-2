@@ -11,11 +11,13 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 
+from deepseek_env import deepseek_flash_api_model, deepseek_pro_api_model
+
 load_dotenv()
 logger = logging.getLogger(__name__)
 
 # 每批发送给 LLM 的岗位条数。
-# DeepSeek 官方：上下文长度 128K，输出长度默认 4K、最大 8K。
+# DeepSeek V4：上下文约 1M；输出上限以官方文档为准（旧版 128K/8K 注释已过时）。
 # 历史取样（每批 6 条示例）：单批 token 约 2k–2.5k 输入（输出远低于 4K）。
 # 默认 10 条/批（略减单次体积，便于试跑）；可通过环境变量 TRACK_LABEL_BATCH_SIZE 覆盖（上限 20）。
 BATCH_SIZE = int(os.getenv("TRACK_LABEL_BATCH_SIZE", "10"))
@@ -94,22 +96,18 @@ JOB_NATURE_PREF_CODES = [
 
 def _get_model_config(model_id: str) -> Tuple[str, str, str]:
     """根据 model_id 返回 (api_key, base_url, model_name)"""
+    _dk = os.getenv("DEEPSEEK_API_KEY")
+    _db = os.getenv("DEEPSEEK_BASE_URL")
+    _flash = (_dk, _db, deepseek_flash_api_model())
+    _pro = (_dk, _db, deepseek_pro_api_model())
     configs = {
         "supermind": (
             os.getenv("SUPER_MIND_API_KEY"),
             os.getenv("SUPER_MIND_BASE_URL"),
             os.getenv("SUPER_MIND_MODEL"),
         ),
-        "deepseek_chat": (
-            os.getenv("DEEPSEEK_API_KEY"),
-            os.getenv("DEEPSEEK_BASE_URL"),
-            os.getenv("DEEPSEEK_MODEL_CHAT", "deepseek-chat"),
-        ),
-        "deepseek_reasoner": (
-            os.getenv("DEEPSEEK_API_KEY"),
-            os.getenv("DEEPSEEK_BASE_URL"),
-            os.getenv("DEEPSEEK_MODEL_REASONER", "deepseek-reasoner"),
-        ),
+        "deepseek_v4_flash": _flash,
+        "deepseek_v4_pro": _pro,
     }
     cfg = configs.get(model_id)
     if not cfg or not all(cfg):
@@ -119,7 +117,7 @@ def _get_model_config(model_id: str) -> Tuple[str, str, str]:
 
 def _get_default_model_id() -> str:
     if all(os.getenv(k) for k in ("DEEPSEEK_API_KEY", "DEEPSEEK_BASE_URL")):
-        return "deepseek_chat"
+        return "deepseek_v4_flash"
     if all(os.getenv(k) for k in ("SUPER_MIND_API_KEY", "SUPER_MIND_BASE_URL", "SUPER_MIND_MODEL")):
         return "supermind"
     raise ValueError("请在 .env 中至少配置 DeepSeek 或 Supermind")

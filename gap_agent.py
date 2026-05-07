@@ -12,24 +12,22 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 
+from deepseek_env import deepseek_flash_api_model, deepseek_pro_api_model
+
 load_dotenv()
 logger = logging.getLogger(__name__)
 
 
 def _get_model_config(model_id: str) -> Tuple[str, str, str]:
+    _dk = os.getenv("DEEPSEEK_API_KEY")
+    _db = os.getenv("DEEPSEEK_BASE_URL")
+    _flash = (_dk, _db, deepseek_flash_api_model())
+    _pro = (_dk, _db, deepseek_pro_api_model())
     configs = {
-        "deepseek_chat": (
-            os.getenv("DEEPSEEK_API_KEY"),
-            os.getenv("DEEPSEEK_BASE_URL"),
-            os.getenv("DEEPSEEK_MODEL_CHAT", "deepseek-chat"),
-        ),
-        "deepseek_reasoner": (
-            os.getenv("DEEPSEEK_API_KEY"),
-            os.getenv("DEEPSEEK_BASE_URL"),
-            os.getenv("DEEPSEEK_MODEL_REASONER", "deepseek-reasoner"),
-        ),
+        "deepseek_v4_flash": _flash,
+        "deepseek_v4_pro": _pro,
     }
-    cfg = configs.get(model_id) or configs.get("deepseek_chat")
+    cfg = configs.get(model_id) or configs.get("deepseek_v4_flash")
     if not cfg or not all(cfg):
         raise ValueError("请在 .env 中配置 DEEPSEEK_API_KEY 和 DEEPSEEK_BASE_URL")
     return cfg
@@ -127,7 +125,7 @@ def run_agent2(
     profile: Dict,
     job: Dict,
     gap_context: Dict,
-    model_id: str = "deepseek_chat",
+    model_id: str = "deepseek_v4_flash",
 ) -> Tuple[Dict, Dict]:
     """
     改写 + 评估（年限硬伤时只返回空改写 + 评估说明）。
@@ -230,7 +228,7 @@ COMMONALITY_MASTER_JOB_ID = "__COMMONALITY_MASTER__"
 def run_agent2_master_from_commonality(
     profile: Dict,
     commonality_report: Dict,
-    model_id: str = "deepseek_chat",
+    model_id: str = "deepseek_v4_flash",
 ) -> Tuple[Dict, Dict]:
     """
     基于 Top 深度匹配岗位共性报告，产出一版可覆盖这批岗位共同要求的主简历改写建议（非逐岗 JD）。

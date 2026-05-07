@@ -87,7 +87,7 @@ class ZhipinCrawler:
             max_pages: 最多爬取的页数
             crawl_details: 是否爬取岗位详情页（包含职位描述、薪资详情、公司介绍等）
             enable_llm_filter: 是否在详情页爬取前启用 LLM 语义过滤（剔除与搜索目标不相关的岗位）
-            model_id: LLM 过滤使用的模型 ID（supermind/deepseek_chat/deepseek_reasoner），仅当 enable_llm_filter=True 时有效
+            model_id: LLM 过滤使用的模型 ID（supermind/deepseek_v4_flash/deepseek_v4_pro），仅当 enable_llm_filter=True 时有效
         
         Returns:
             岗位数据列表

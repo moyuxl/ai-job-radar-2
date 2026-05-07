@@ -20,7 +20,7 @@ def start_track_label_task(
     启动赛道标注任务（异步）。默认处理 DB 中全部符合条件的岗位。
 
     Args:
-        model_id: 模型 ID（deepseek_chat/supermind/...），空时使用默认（DeepSeek Chat）
+        model_id: 模型 ID（deepseek_v4_flash/supermind/...），空时使用默认（deepseek_v4_flash）
         only_unlabeled: 是否只标注尚未标注的岗位
         limit: 最多标注条数（默认 99999，即全部）
 

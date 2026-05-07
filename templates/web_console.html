@@ -194,6 +194,8 @@
                 </div>
                 <p class="section-desc" style="margin-top:0">一次点击：补全未标注或缺字段的职位。</p>
                 <button type="submit" id="startTrackLabelBtn" class="btn btn-secondary"><span class="btn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/></svg></span>开始赛道标注</button>
+                <button type="button" id="btnJobExpiryCheck" class="btn btn-secondary" style="margin-top:0.75rem"><span class="btn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></span>排除过期岗位</button>
+                <p class="form-hint" style="margin-top:0.5rem">使用已登录的浏览器逐条打开详情页，识别「职位已关闭」并标记；已关闭岗位将不再出现在下方筛选表与匹配列表中。已标为<strong>在招</strong>的岗位，<strong>7 天内</strong>不会重复检测（可按需改 API 参数 <code>open_cooldown_days</code>，0 表示不冷却）。</p>
             </form>
             <div class="track-filter-block">
                 <h3 class="track-filter-title">筛选后的岗位信息</h3>
@@ -995,6 +997,14 @@
             if (nextBtn) nextBtn.addEventListener('click', () => workbenchApplyStep(workbenchCurrentStep + 1));
             workbenchApplyStep(0);
         }
+
+        /** 抓取 / 分析 / 赛道标注 / 排除过期岗位 互斥，统一禁用主按钮 */
+        function setPrimaryTaskButtonsDisabled(on) {
+            ['startBtn', 'startAnalysisBtn', 'startTrackLabelBtn', 'btnJobExpiryCheck'].forEach(function(id) {
+                const el = document.getElementById(id);
+                if (el) el.disabled = on;
+            });
+        }
         
         window.addEventListener('DOMContentLoaded', () => {
             initWorkbenchChrome();
@@ -1038,9 +1048,7 @@
                 const data = await response.json();
                 if (response.ok) {
                     currentTaskId = data.task_id;
-                    document.getElementById('startBtn').disabled = true;
-                    document.getElementById('startAnalysisBtn').disabled = true;
-                    document.getElementById('startTrackLabelBtn').disabled = true;
+                    setPrimaryTaskButtonsDisabled(true);
                     document.getElementById('statusSection').classList.add('show');
                     startStatusPolling();
                 } else {
@@ -1068,8 +1076,7 @@
                 const data = await response.json();
                 if (response.ok) {
                     currentTaskId = data.task_id;
-                    document.getElementById('startAnalysisBtn').disabled = true;
-                    document.getElementById('startTrackLabelBtn').disabled = true;
+                    setPrimaryTaskButtonsDisabled(true);
                     document.getElementById('statusSection').classList.add('show');
                     startStatusPolling();
                 } else {
@@ -1210,6 +1217,7 @@
         function filterMatchResultsForView(results) {
             if (!results || !results.length) return [];
             return results.filter(function(r) {
+                if ((r.recruitment_status || '') === 'closed') return false;
                 const p = getMatchTrackParams();
                 if (p.company_types && p.company_types.length) {
                     if (p.company_types.indexOf(r.company_type || '') < 0) return false;
@@ -1430,7 +1438,7 @@
         document.getElementById('btnCommonalityReport').addEventListener('click', async function() {
             const resumePath = document.getElementById('matchResumeSelect').value;
             if (!resumePath) { alert('请先选择简历'); return; }
-            const modelId = document.getElementById('match_model').value || 'deepseek_chat';
+            const modelId = document.getElementById('match_model').value || 'deepseek_v4_flash';
             const trackParams = getMatchTrackParams();
             const commonalityBody = { resume_path: resumePath, model_id: modelId, top_n: 10, track_params: trackParams };
             const cachedUrl = '/api/match/commonality_report/cached?resume_path=' + encodeURIComponent(resumePath)
@@ -1532,7 +1540,7 @@
                     }
                 } catch (e) { /* 继续 */ }
             }
-            const modelId = document.getElementById('match_model').value || 'deepseek_chat';
+            const modelId = document.getElementById('match_model').value || 'deepseek_v4_flash';
             try {
                 agentStage.textContent = '准备中...';
                 if (loadEl) loadEl.style.display = 'inline';
@@ -1759,7 +1767,7 @@
 
         async function startMatchRerunOne(jobId, resumePath) {
             if (!confirm('将重新对该岗位执行粗评与深度匹配（Match Agent），并覆盖当前分数。是否继续？')) return;
-            const modelId = document.getElementById('match_model').value || 'deepseek_chat';
+            const modelId = document.getElementById('match_model').value || 'deepseek_v4_flash';
             try {
                 const res = await fetch('/api/match/rerun_one', {
                     method: 'POST',
@@ -1771,9 +1779,7 @@
                 const rerunTaskId = data.task_id;
                 document.getElementById('matchProgress').style.display = 'block';
                 document.getElementById('matchTokenInfo').style.display = 'none';
-                document.getElementById('startBtn').disabled = true;
-                document.getElementById('startAnalysisBtn').disabled = true;
-                document.getElementById('startTrackLabelBtn').disabled = true;
+                setPrimaryTaskButtonsDisabled(true);
                 document.getElementById('statusSection').classList.add('show');
                 const rerunPoll = setInterval(async () => {
                     const st = await fetch('/api/task/' + rerunTaskId + '/status').then(r => r.json());
@@ -1782,9 +1788,7 @@
                     document.getElementById('matchProgressText').textContent = (st.progress.current || 0) + '/' + (st.progress.total || 1) + '（重新匹配）';
                     if (st.status === 'completed' || st.status === 'failed') {
                         clearInterval(rerunPoll);
-                        document.getElementById('startBtn').disabled = false;
-                        document.getElementById('startAnalysisBtn').disabled = false;
-                        document.getElementById('startTrackLabelBtn').disabled = false;
+                        setPrimaryTaskButtonsDisabled(false);
                         if (st.status === 'completed' && st.result) {
                             const r = st.result;
                             const tokenEl = document.getElementById('matchTokenInfo');
@@ -1821,7 +1825,7 @@
                     }
                 } catch (e) { /* 无缓存继续 */ }
             }
-            const modelId = document.getElementById('match_model').value || 'deepseek_chat';
+            const modelId = document.getElementById('match_model').value || 'deepseek_v4_flash';
             try {
                 agentStage.textContent = '准备中...';
                 const res = await fetch('/api/gap/start', {
@@ -2005,9 +2009,7 @@
                 document.getElementById('matchProgress').style.display = 'block';
                 document.getElementById('matchTokenInfo').style.display = 'none';
                 document.getElementById('matchTokenInfo').textContent = '';
-                document.getElementById('startBtn').disabled = true;
-                document.getElementById('startAnalysisBtn').disabled = true;
-                document.getElementById('startTrackLabelBtn').disabled = true;
+                setPrimaryTaskButtonsDisabled(true);
                 document.getElementById('statusSection').classList.add('show');
                 const matchTaskId = data.task_id;
                 const matchPoll = setInterval(async () => {
@@ -2017,9 +2019,7 @@
                     document.getElementById('matchProgressText').textContent = st.progress.current + '/' + st.progress.total;
                     if (st.status === 'completed' || st.status === 'failed') {
                         clearInterval(matchPoll);
-                        document.getElementById('startBtn').disabled = false;
-                        document.getElementById('startAnalysisBtn').disabled = false;
-                        document.getElementById('startTrackLabelBtn').disabled = false;
+                        setPrimaryTaskButtonsDisabled(false);
                         if (st.status === 'completed' && st.result) {
                             const r = st.result;
                             const tokenEl = document.getElementById('matchTokenInfo');
@@ -2093,13 +2093,33 @@
                 const data = await response.json();
                 if (response.ok) {
                     currentTaskId = data.task_id;
-                    document.getElementById('startBtn').disabled = true;
-                    document.getElementById('startAnalysisBtn').disabled = true;
-                    document.getElementById('startTrackLabelBtn').disabled = true;
+                    setPrimaryTaskButtonsDisabled(true);
                     document.getElementById('statusSection').classList.add('show');
                     startStatusPolling();
                 } else {
                     alert('启动赛道标注失败: ' + data.detail);
+                }
+            } catch (error) {
+                alert('请求失败: ' + error.message);
+            }
+        });
+
+        document.getElementById('btnJobExpiryCheck').addEventListener('click', async () => {
+            if (!confirm('将使用浏览器逐条打开职位详情页，检测是否「已关闭」并写入数据库（已关闭岗位将从赛道筛选、匹配列表中隐藏）。\n\n请保持已登录 Boss。是否继续？')) return;
+            try {
+                const response = await fetch('/api/jobs/expiry-check/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ delay_sec: 1.5, limit: 500, open_cooldown_days: 7 })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    currentTaskId = data.task_id;
+                    setPrimaryTaskButtonsDisabled(true);
+                    document.getElementById('statusSection').classList.add('show');
+                    startStatusPolling();
+                } else {
+                    alert('启动失败: ' + (data.detail || ''));
                 }
             } catch (error) {
                 alert('请求失败: ' + error.message);
@@ -2181,11 +2201,15 @@
                 if (!data.jobs || data.jobs.length === 0) {
                     wrap.innerHTML = '<p class="track-filter-empty">暂无符合条件的数据</p>';
                 } else {
-                    let table = '<table class="track-filter-table"><thead><tr><th>公司名称</th><th>公司属性</th><th>岗位实质</th><th>岗位方向</th><th>置信度</th><th>薪资</th><th>链接</th></tr></thead><tbody>';
+                    let table = '<table class="track-filter-table"><thead><tr><th>公司名称</th><th>公司属性</th><th>岗位实质</th><th>岗位方向</th><th>置信度</th><th>招聘状态</th><th>薪资</th><th>链接</th></tr></thead><tbody>';
                     data.jobs.forEach(job => {
                         const link = job.job_url ? `<a href="${job.job_url}" target="_blank" rel="noopener">查看</a>` : '-';
                         const dirPrimary = job.job_direction_primary ? (jobDirectionLabels[job.job_direction_primary] || job.job_direction_primary) : '-';
-                        table += `<tr><td>${(job.company_name || '').substring(0,15)}</td><td>${job.company_type || '-'}</td><td>${job.job_nature || '-'}</td><td>${dirPrimary}</td><td>${job.track_confidence || '-'}</td><td>${job.salary_desc || '-'}</td><td>${link}</td></tr>`;
+                        let rs = '-';
+                        if (job.recruitment_status === 'closed') rs = '已关闭';
+                        else if (job.recruitment_status === 'open') rs = '在招';
+                        else if (job.recruitment_status === 'unknown') rs = '未判定';
+                        table += `<tr><td>${(job.company_name || '').substring(0,15)}</td><td>${job.company_type || '-'}</td><td>${job.job_nature || '-'}</td><td>${dirPrimary}</td><td>${job.track_confidence || '-'}</td><td>${rs}</td><td>${job.salary_desc || '-'}</td><td>${link}</td></tr>`;
                     });
                     table += '</tbody></table>';
                     wrap.innerHTML = table;
@@ -2237,10 +2261,7 @@
                     updateStatus(data);
                     if (data.status === 'completed' || data.status === 'failed' || data.status === 'cancelled') {
                         clearInterval(statusCheckInterval);
-                        document.getElementById('startBtn').disabled = false;
-                        document.getElementById('startAnalysisBtn').disabled = false;
-                        const trackLabelBtn = document.getElementById('startTrackLabelBtn');
-                        if (trackLabelBtn) trackLabelBtn.disabled = false;
+                        setPrimaryTaskButtonsDisabled(false);
                         if (data.status === 'completed') {
                             if (data.result.output_file) {
                                 document.getElementById('excel_path').value = data.result.output_file;
@@ -2301,7 +2322,7 @@
             });
             logsContainer.scrollTop = logsContainer.scrollHeight;
             
-            if (data.result.output_file || data.result.total_labeled !== undefined || data.result.resume_path) {
+            if (data.result.output_file || data.result.total_labeled !== undefined || data.result.resume_path || data.result.checked_total !== undefined) {
                 const resultSection = document.getElementById('resultSection');
                 const resultContent = document.getElementById('resultContent');
                 resultSection.classList.add('show');
@@ -2312,6 +2333,9 @@
                 }
                 if (data.result.total_labeled !== undefined) {
                     resultHtml += `<p><strong>赛道标注:</strong> 已标注 ${data.result.total_labeled} 条，失败 ${data.result.failed_count || 0} 条</p>`;
+                }
+                if (data.result.checked_total !== undefined) {
+                    resultHtml += `<p><strong>排除过期岗位:</strong> 已检测 ${data.result.checked_total} 条 — 在招 ${data.result.open_count ?? 0}，已关闭 ${data.result.closed_count ?? 0}，无法判定 ${data.result.unknown_count ?? 0}，请求失败 ${data.result.failed_count ?? 0}</p>`;
                 }
                 if (data.result.resume_path) {
                     resultHtml += `<p><strong>匹配评分:</strong> 成功 ${data.result.success_count || 0} 条，失败 ${data.result.failed_count || 0} 条</p>`;
@@ -2360,6 +2384,12 @@
                 const data = await response.json();
                 if (!response.ok) {
                     alert('确认失败: ' + (data.detail || '未知错误'));
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = '<span class="btn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></span>我已登录，继续执行';
+                    confirmBtn.style.opacity = '1';
+                    confirmBtn.style.cursor = 'pointer';
+                } else {
+                    // 确认成功：恢复按钮；轮询收到 running 后会收起确认区
                     confirmBtn.disabled = false;
                     confirmBtn.innerHTML = '<span class="btn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></span>我已登录，继续执行';
                     confirmBtn.style.opacity = '1';

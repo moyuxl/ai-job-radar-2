@@ -26,7 +26,7 @@ def run_analysis_task(task_id: str, excel_path: str, output_dir: str = "output",
         task_id: 任务ID
         excel_path: 原始数据 Excel 文件路径
         output_dir: 输出目录
-        model_id: 模型 ID（supermind/deepseek），空时使用默认
+        model_id: 模型 ID（supermind/deepseek_v4_flash 等），空时使用默认
     """
     try:
         # 更新状态为运行中
@@ -287,7 +287,7 @@ def start_analysis_task(excel_path: str, output_dir: str = "output", model_id: s
     Args:
         excel_path: 原始数据 Excel 文件路径
         output_dir: 输出目录
-        model_id: 模型 ID（supermind/deepseek），空时使用默认
+        model_id: 模型 ID（supermind/deepseek_v4_flash 等），空时使用默认
     
     Returns:
         任务ID

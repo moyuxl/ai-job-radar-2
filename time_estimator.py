@@ -27,6 +27,7 @@ SEC_PER_JOB_ANALYSIS = 23.0  # 深度分析每条（2 秒间隔 + ~21 秒 LLM �
 SEC_PER_JOB_TRACK_LABEL = 120.0 / 75
 # 匹配评分：实测约 69 条共 9 分钟（540 秒，粗评+深度等整段任务）
 SEC_PER_JOB_MATCH = 540.0 / 69
+SEC_PER_JOB_EXPIRY_LOAD = 2.0  # 过期检测：单条详情页加载与解析摊销
 
 # 固定开销（秒）
 INIT_OVERHEAD = 10  # 页面加载、登录检查等（略上调）
@@ -96,6 +97,12 @@ def estimate_match_duration(job_count: int) -> float:
     return job_count * SEC_PER_JOB_MATCH
 
 
+def estimate_job_expiry_duration(job_count: int, delay_sec: float = 1.5) -> float:
+    """估算「排除过期岗位」总用时（秒）：每条间隔 + 页面加载。"""
+    d = max(0.3, float(delay_sec))
+    return INIT_OVERHEAD + job_count * (d + SEC_PER_JOB_EXPIRY_LOAD)
+
+
 def get_estimated_end_time(
     start_time_iso: Optional[str],
     task_type: str,
@@ -108,7 +115,7 @@ def get_estimated_end_time(
 
     Args:
         start_time_iso: 任务开始时间 ISO 字符串
-        task_type: "crawl" / "analysis" / "track_label" / "match"
+        task_type: "crawl" / "analysis" / "track_label" / "match" / "job_expiry"
         params: 任务参数
         progress: 进度 {current, total, percentage}
         result: 结果 {job_count?, success_count?, ...}
@@ -116,7 +123,13 @@ def get_estimated_end_time(
     Returns:
         预计完成时间字符串 "HH:MM"，无法计算时返回 None
     """
-    if not start_time_iso or task_type not in ("crawl", "analysis", "track_label", "match"):
+    if not start_time_iso or task_type not in (
+        "crawl",
+        "analysis",
+        "track_label",
+        "match",
+        "job_expiry",
+    ):
         return None
 
     try:
@@ -144,6 +157,12 @@ def get_estimated_end_time(
         if job_count <= 0:
             return None
         total_sec = estimate_match_duration(job_count)
+    elif task_type == "job_expiry":
+        job_count = progress.get("total") or 0
+        if job_count <= 0:
+            return None
+        delay_sec = float(params.get("delay_sec") or 1.5)
+        total_sec = estimate_job_expiry_duration(job_count, delay_sec)
     else:
         job_count = progress.get("total") or result.get("success_count", 0)
         if job_count <= 0:

@@ -101,7 +101,7 @@ def _extract_json_object(text: str) -> Optional[Dict[str, Any]]:
 
 def run_commonality_analysis(
     resume_path: str,
-    model_id: str = "deepseek_chat",
+    model_id: str = "deepseek_v4_flash",
     top_n: int = 10,
     track_params: Optional[Dict[str, Any]] = None,
 ) -> Tuple[Dict[str, Any], Dict[str, int]]:
