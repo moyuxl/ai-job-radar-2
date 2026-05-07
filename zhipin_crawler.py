@@ -9,7 +9,7 @@ import time
 import logging
 from datetime import datetime
 from typing import List, Dict, Optional
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, quote
 
 # 配置日志（必须在导入其他模块之前）
 logging.basicConfig(
@@ -35,6 +35,11 @@ except ImportError:
     print("❌ DrissionPage 未安装，请运行: pip install drissionpage")
 
 try:
+    from drission_browser import chromium_options_for_automation
+except ImportError:
+    chromium_options_for_automation = None  # type: ignore
+
+try:
     import pandas as pd
     HAS_PANDAS = True
 except ImportError:
@@ -53,6 +58,29 @@ except ImportError as e:
     logger.warning(f"⚠️ 代码映射未找到: {e}")
 
 
+def build_job_search_url(
+    keyword: str,
+    city: str,
+    degree: str = "",
+    experience: str = "",
+    salary: str = "",
+) -> str:
+    """构建 Boss 直聘求职者端职位搜索 URL。
+
+    ``query`` 必须经过 ``quote``，否则中文或含空格关键词可能导致浏览器无法打开正确页面。
+    """
+    kw = (keyword or "").strip()
+    query = quote(kw, safe="")
+    url = f"https://www.zhipin.com/web/geek/job?query={query}&city={city}"
+    if degree:
+        url += f"&degree={degree}"
+    if experience:
+        url += f"&experience={experience}"
+    if salary:
+        url += f"&salary={salary}"
+    return url
+
+
 class ZhipinCrawler:
     """Boss 直聘爬虫类"""
     
@@ -66,9 +94,12 @@ class ZhipinCrawler:
         if not HAS_DRISSIONPAGE:
             raise ImportError("DrissionPage 未安装，请运行: pip install drissionpage")
         
-        # 创建浏览器页面对象
-        # DrissionPage 会自动管理浏览器驱动，无需手动配置
-        self.page = ChromiumPage()
+        # 独立配置档 + 不读可能被篡改主页的 ini，避免打开即 hao123 等导航站
+        if chromium_options_for_automation:
+            co = chromium_options_for_automation(headless=headless)
+            self.page = ChromiumPage(co)
+        else:
+            self.page = ChromiumPage()
         self.headless = headless
         
         logger.info("✅ DrissionPage 爬虫初始化成功")
@@ -103,14 +134,7 @@ class ZhipinCrawler:
             logger.info(f"开始爬取: keyword={keyword}, city={city}({city_name}), degree={degree}({degree_name}), experience={experience}({experience_name}), salary={salary}({salary_name}), max_pages={max_pages}, crawl_details={crawl_details}")
             logger.info(f"详情页爬取模块状态: HAS_DETAIL_CRAWLER={HAS_DETAIL_CRAWLER}")
             
-            # 构建搜索 URL
-            search_url = f'https://www.zhipin.com/web/geek/job?query={keyword}&city={city}'
-            if degree:
-                search_url += f'&degree={degree}'
-            if experience:
-                search_url += f'&experience={experience}'
-            if salary:
-                search_url += f'&salary={salary}'
+            search_url = build_job_search_url(keyword, city, degree, experience, salary)
             logger.info(f"访问搜索页面: {search_url}")
             
             # 检查是否已经访问过页面（Web 操作台模式下，外部已经访问并处理了登录）

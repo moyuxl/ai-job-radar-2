@@ -17,6 +17,11 @@ except ImportError:
     HAS_DRISSIONPAGE = False
     print("❌ DrissionPage 未安装，请运行: pip install drissionpage")
 
+try:
+    from drission_browser import chromium_options_for_automation
+except ImportError:
+    chromium_options_for_automation = None  # type: ignore
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
@@ -43,7 +48,11 @@ class DetailCrawler:
             self.page = page
             self.own_page = False
         else:
-            self.page = ChromiumPage()
+            if chromium_options_for_automation:
+                co = chromium_options_for_automation(headless=headless)
+                self.page = ChromiumPage(co)
+            else:
+                self.page = ChromiumPage()
             self.own_page = True
             self.headless = headless
         

@@ -120,7 +120,7 @@ uvicorn web_console:app --host 0.0.0.0 --port 8001 --no-access-log
 ### 6. 改写 Agent（主简历改写）
 
 - **推荐流程**：匹配评分 → **生成共性报告**（在当前关键词/赛道筛选范围内，≥80 分的深度匹配里按分取 Top10，可少于 10）→ **基于共性优化主简历**（一次改写，覆盖这批岗共性；无需逐岗改 10 版）。
-- 改写调用 `gap_agent.run_agent2_master_from_commonality`，结果写入 `agent_analysis`，字段 `job_id` 固定为 `__COMMONALITY_MASTER__`（与单岗记录区分）。API：`POST /api/gap/master_rewrite`，查询：`GET /api/gap/master_result?resume_path=...`。
+- 改写调用 `gap_agent.run_agent2_master_from_commonality`，结果写入 `agent_analysis`，字段 `job_id` 固定为 `__COMMONALITY_MASTER`__（与单岗记录区分）。API：`POST /api/gap/master_rewrite`，查询：`GET /api/gap/master_result?resume_path=...`。
 - **差距数据**：来自共性报告中的 `priority_gaps` / `resume_optimizations`（展示用），**不再按单岗拉 JD**。
 - **旧接口**：`POST /api/gap/start` 仍为「单岗 + 该岗 JD」改写，保留兼容；主流程已改为共性驱动主简历。
 - 主简历整体预期（四档，基于改后四维）：**投递** / **谨慎投递** / **可以试但概率低** / **不建议投递**
@@ -137,7 +137,7 @@ uvicorn web_console:app --host 0.0.0.0 --port 8001 --no-access-log
 
 ## 配置
 
-完整变量模板见 **`.env.example`**（复制为 `.env` 后填写）。
+完整变量模板见 `**.env.example`**（复制为 `.env` 后填写）。
 
 ### .env（DeepSeek 示例）
 
@@ -154,42 +154,44 @@ DEEPSEEK_MODEL_V4_PRO=deepseek-v4-pro
 
 ### 模型选项（界面 ↔ API）
 
-所有「选模型」的下拉数据来自 **`GET /api/options/models`**。当前约定：
+所有「选模型」的下拉数据来自 `**GET /api/options/models`**。当前约定：
 
-| 界面展示名 | `model_id`（请求体 / 表单里传的值） | 发往 LLM 的 `model` 字段（默认） |
-| ---------- | ----------------------------------- | -------------------------------- |
-| V4 Flash | `deepseek_v4_flash` | `deepseek-v4-flash` |
-| V4 Pro | `deepseek_v4_pro` | `deepseek-v4-pro` |
-| Supermind | `supermind` | `.env` 中 `SUPER_MIND_MODEL` |
 
-实际模型名字符串由 **`deepseek_env.py`** 读取环境变量决定（含对上述旧变量名的兼容）。
+| 界面展示名     | `model_id`（请求体 / 表单里传的值） | 发往 LLM 的 `model` 字段（默认）     |
+| --------- | ------------------------ | --------------------------- |
+| V4 Flash  | `deepseek_v4_flash`      | `deepseek-v4-flash`         |
+| V4 Pro    | `deepseek_v4_pro`        | `deepseek-v4-pro`           |
+| Supermind | `supermind`              | `.env` 中 `SUPER_MIND_MODEL` |
+
+
+实际模型名字符串由 `**deepseek_env.py`** 读取环境变量决定（含对上述旧变量名的兼容）。
 
 ### 端口（本地 / 云上）
 
-未设置时工作台为 **8001**。若部署平台注入 **`PORT`**（如部分 PaaS），`start_web_console.py` 会优先使用该端口。
+未设置时工作台为 **8001**。若部署平台注入 `**PORT`**（如部分 PaaS），`start_web_console.py` 会优先使用该端口。
 
 ## 主要 API
 
 
-| 端点                                                      | 说明                                                 |
-| ------------------------------------------------------- | -------------------------------------------------- |
-| POST /api/crawl/start                                   | 启动抓取                                               |
-| GET /api/options/cities 等                               | 城市、学历、经验、薪资等下拉选项                                       |
-| GET /api/options/models                                  | LLM 选项（`deepseek_v4_flash` / `deepseek_v4_pro` / `supermind`）   |
-| POST /api/analysis/start                                | 启动分析                                               |
-| POST /api/track-label/start                             | 启动赛道标注                                             |
-| POST /api/jobs/by-track、POST /api/jobs/export           | 按赛道筛选与导出                                           |
-| POST /api/resume/upload、POST /api/resume/load 等         | 简历上传/列表/偏好                                         |
-| POST /api/match/start                                   | 启动匹配                                               |
-| POST /api/match/rerun_one                               | 单岗位重新匹配                                            |
-| GET /api/match/results                                  | 匹配结果列表                                             |
-| POST /api/match/applied                                 | 更新投递标记（`applied_status`: 0/1/2；兼容旧字段 `applied` 布尔） |
-| GET/POST /api/match/commonality_report*                 | 共性报告缓存与生成                                          |
-| POST /api/gap/start                                     | 单岗差距/改写（兼容）                                        |
-| POST /api/gap/master_rewrite、GET /api/gap/master_result | 基于共性的主简历改写                                         |
-| GET /api/gap/result                                     | 获取单岗差距分析缓存                                         |
-| GET /api/task/{id}/status、POST /api/task/{id}/confirm   | 任务状态与登录等确认                                         |
-| GET /api/file/{path}                                    | 受控路径下的结果文件预览                                       |
+| 端点                                                      | 说明                                                            |
+| ------------------------------------------------------- | ------------------------------------------------------------- |
+| POST /api/crawl/start                                   | 启动抓取                                                          |
+| GET /api/options/cities 等                               | 城市、学历、经验、薪资等下拉选项                                              |
+| GET /api/options/models                                 | LLM 选项（`deepseek_v4_flash` / `deepseek_v4_pro` / `supermind`） |
+| POST /api/analysis/start                                | 启动分析                                                          |
+| POST /api/track-label/start                             | 启动赛道标注                                                        |
+| POST /api/jobs/by-track、POST /api/jobs/export           | 按赛道筛选与导出                                                      |
+| POST /api/resume/upload、POST /api/resume/load 等         | 简历上传/列表/偏好                                                    |
+| POST /api/match/start                                   | 启动匹配                                                          |
+| POST /api/match/rerun_one                               | 单岗位重新匹配                                                       |
+| GET /api/match/results                                  | 匹配结果列表                                                        |
+| POST /api/match/applied                                 | 更新投递标记（`applied_status`: 0/1/2；兼容旧字段 `applied` 布尔）            |
+| GET/POST /api/match/commonality_report*                 | 共性报告缓存与生成                                                     |
+| POST /api/gap/start                                     | 单岗差距/改写（兼容）                                                   |
+| POST /api/gap/master_rewrite、GET /api/gap/master_result | 基于共性的主简历改写                                                    |
+| GET /api/gap/result                                     | 获取单岗差距分析缓存                                                    |
+| GET /api/task/{id}/status、POST /api/task/{id}/confirm   | 任务状态与登录等确认                                                    |
+| GET /api/file/{path}                                    | 受控路径下的结果文件预览                                                  |
 
 
 ## 文件结构
@@ -224,7 +226,8 @@ ai-job-radar2/
 
 ## 注意事项
 
-1. **浏览器窗口**：抓取会打开 DrissionPage 浏览器，请勿关闭
+1. **浏览器窗口**：抓取会打开 DrissionPage 控制的 Chromium，请勿关闭  
+   - 若一打开就是 **hao123** 等导航站：多为本机「改装浏览器」或默认主页被锁。项目已使用 **独立临时配置档**（`drission_browser.py`）减轻该问题；仍出现时请在 `.env` 或系统环境里指定 **官方 Chrome / Edge** 可执行文件路径：`CHROME_PATH` 或 `DRISSION_BROWSER_PATH`（例如 `C:\Program Files\Google\Chrome\Application\chrome.exe`）。
 2. **登录确认**：若检测到登录页，点击「我已登录，继续执行」
 3. **任务状态**：轮询展示，完成后停止刷新
 4. **匹配缓存**：同一简历+岗位只评一次，差距分析同理

@@ -8,7 +8,7 @@ import logging
 from pathlib import Path
 from typing import Dict, Optional
 
-from zhipin_crawler import ZhipinCrawler
+from zhipin_crawler import ZhipinCrawler, build_job_search_url
 from task_manager import task_manager, TaskStatus
 from task_log_handler import TaskLogHandler
 from zhipin_crawler_wrapper import ZhipinCrawlerWrapper
@@ -107,19 +107,27 @@ def run_crawl_task(task_id: str, params: Dict, output_dir: str = "output"):
             
             task_manager.add_log(task_id, f"搜索条件: {keyword}, 城市: {city}, 页数: {max_pages}", "INFO")
             
-            # 构建搜索 URL（用于登录检查）
-            search_url = f'https://www.zhipin.com/web/geek/job?query={keyword}&city={city}'
-            if degree:
-                search_url += f'&degree={degree}'
-            if experience:
-                search_url += f'&experience={experience}'
-            if salary:
-                search_url += f'&salary={salary}'
+            search_url = build_job_search_url(keyword, city, degree, experience, salary)
             
             # 访问搜索页面并检查登录
             task_manager.add_log(task_id, "正在访问搜索页面...", "INFO")
+            task_manager.add_log(task_id, f"目标 URL: {search_url}", "INFO")
             crawler.page.get(search_url)
             time.sleep(3)  # 等待页面加载
+
+            cur = (crawler.page.url or "").strip()
+            if "zhipin.com" not in cur.lower():
+                warn = (
+                    f"浏览器当前未落在 Boss 直聘（地址: {cur[:220] or '(空)'}），"
+                    "多半与关键词编码或网络有关；将自动重试打开一次。"
+                )
+                task_manager.add_log(task_id, warn, "WARNING")
+                logger.warning("[爬虫服务] %s", warn)
+                crawler.page.get(search_url)
+                time.sleep(3)
+                cur = (crawler.page.url or "").strip()
+
+            task_manager.add_log(task_id, f"当前浏览器地址: {cur or '(未能读取)'}", "INFO")
             
             # 标记页面已访问（用于 crawl_jobs 内部判断）
             crawler._page_already_visited = True

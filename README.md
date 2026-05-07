@@ -47,6 +47,7 @@ ai-job-radar2/
 ├── gap_service.py / gap_agent.py  # 改写与差距
 ├── resume_extractor.py         # 简历解析
 ├── deepseek_env.py             # DeepSeek API model 名与环境变量解析（兼容旧变量名）
+├── drission_browser.py         # DrissionPage 干净启动选项（减轻 hao123 主页劫持）
 ├── templates/
 │   ├── landing.html            # 首页
 │   └── web_console.html        # 工作台
